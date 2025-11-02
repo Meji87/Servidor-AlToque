@@ -1,7 +1,9 @@
 
 package com.altoque.altoque_server.servidor;
 
+import com.altoque.altoque_server.servei.GestorEmpresa;
 import com.altoque.altoque_server.servei.GestorPeticions;
+import com.altoque.altoque_server.servei.GestorUsuari;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,11 +24,11 @@ public class GestorServidor extends Thread{
     /**
      * Crea el gestor per a un socket de client.
      * @param socket connexió amb el client
-     * @param sessions gestor de sessions compartit
+     * @param gestorPeticions  gestor de peticions compartit
      */
-    public GestorServidor(Socket socket, GestorSessions sessions) {
+    public GestorServidor(Socket socket, GestorPeticions gestorPeticions) {
         this.socket = socket;
-        this.gestorPeticions = new GestorPeticions(sessions);
+        this.gestorPeticions = gestorPeticions;
     }
     
     @Override

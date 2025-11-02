@@ -1,14 +1,25 @@
 
 package com.altoque.altoque_server.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 /**
  * Classe que representa una empresa
  * @author marc mestres
  */
+@Entity
+@Table(name = "empreses")
 public class Empresa {
+    @Id
+    @Column(unique = true)
     String cif;
     String contrasenya;
 
+    public Empresa() {}
+    
     /**
      * Contrueix una empresa espesificant el cif i la contrasenya.
      * 
@@ -20,6 +31,9 @@ public class Empresa {
         this.contrasenya = contrasenya;
     }
 
+
+
+    
     /**
      * Retorna el valor de cif
      *

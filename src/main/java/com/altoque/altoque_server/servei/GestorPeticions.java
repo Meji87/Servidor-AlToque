@@ -1,14 +1,15 @@
 
 package com.altoque.altoque_server.servei;
 
+import com.altoque.altoque_server.Const;
 import com.altoque.altoque_server.dto.RespostaPeticio;
 import com.altoque.altoque_server.dto.Peticio;
 import com.altoque.altoque_server.model.Empresa;
 import com.altoque.altoque_server.model.Usuari;
+import com.altoque.altoque_server.servidor.GestorException;
 import com.altoque.altoque_server.servidor.GestorSessions;
 import com.google.gson.Gson;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.stereotype.Component;
 
 /**
  * Punt central que gestiona les peticions.
@@ -17,51 +18,23 @@ import java.util.concurrent.ConcurrentHashMap;
  * 
  * @author marc mestres
  */
+@Component
 public class GestorPeticions {
     
-    private final GestorSessions gestorSessions;
-    // dades de prova en memòria
-    private final Map<String, Usuari> usuaris = new ConcurrentHashMap<>();
-    private final Map<String, Empresa> empreses = new ConcurrentHashMap<>();
+    private final GestorSessions sessions;
+    private final GestorUsuari usuaris;
+    private final GestorEmpresa empreses;
     
     /**
      * Crea el gestor i carrega dades de prova.
      * @param sessions instància compartida de sessions
+     * @param usuaris  instància compartida d'usuaris
+     * @param empreses instància compartida d'empreses
      */
-    public GestorPeticions(GestorSessions sessions) {
-        this.gestorSessions = sessions;
-        carregarDadesProva();
-    }
-
-    // nom de les peticions
-    public static final String LOGIN_USUARI = "LOGIN_USUARI";
-    public static final String LOGIN_EMPRESA = "LOGIN_EMPRESA";
-    public static final String LOGOUT = "LOGOUT";
-    public static final String USUARI_ADD = "USUARI_ADD";
-    public static final String USUARI_DEL = "USUARI_DEL";
-    public static final String EMPRESA_ADD = "EMPRESA_ADD";
-    public static final String EMPRESA_DEL = "EMPRESA_DEL";
-    
-    // codis
-    public static final int OK_RETURN_CODE = 0;
-    public static final int ERROR_RETURN_CODE = 1; 
-    
-    
-    //private boolean isLoggedIn = false; 
-    
-    /**
-     * Carrega usuaris i empreses de mostra en memòria.
-     */
-    private void carregarDadesProva(){
-        //Usuaris
-        usuaris.put("M13", new Usuari("M13", "123"));
-        usuaris.put("M01", new Usuari("M01", "456"));
-        usuaris.put("M02", new Usuari("M02", "789"));
-        
-        //Empreses
-        empreses.put("001", new Empresa("001", "123"));
-        empreses.put("002", new Empresa("002", "456"));
-        empreses.put("003", new Empresa("003", "789"));
+    public GestorPeticions(GestorSessions sessions, GestorUsuari usuaris, GestorEmpresa empreses) {
+        this.sessions = sessions;
+        this.usuaris = usuaris;
+        this.empreses = empreses;
     }
 
     /**
@@ -75,99 +48,244 @@ public class GestorPeticions {
         Gson gson = new Gson();
         Peticio input = gson.fromJson(tipusPeticio, Peticio.class);
      
-        RespostaPeticio resposta;
+        //RespostaPeticio resposta;
                 
         String peticio = input.getPeticio();
 
-        // Si tipusPeticio LOGIN_USUARI 
-        if(peticio.equals(LOGIN_USUARI)){
+        try{
+            // Si tipusPeticio LOGIN_USUARI 
+            if(peticio.equals(Const.Peticio.LOGIN_USUARI)){
+                // Recuperem els parametres de la petició (nomUsuari i contrasenya)
+                String nomusuari= RequereixParametre(input, 0, Const.Dades.NOM_USUARI); //(String) input.getData(0,String.class);
+                String contrasenya = RequereixParametre(input, 1, Const.Dades.CONTRASENYA); //(String) input.getData(1,String.class);
 
-            // Recuperem els parametres de la petició (nomUsuari i contrasenya)
-            String nomusuari= (String) input.getData(0,String.class);
-            String contrasenya = (String) input.getData(1,String.class);
+                RespostaPeticio resposta = loginUsuari(nomusuari, contrasenya);
+                return gson.toJson(resposta);
+
+            // Si tipusPeticio LOGIN_EMPRESA 
+            }else if(peticio.equals(Const.Peticio.LOGIN_EMPRESA)){
+                // Recuperem els parametres de la petició (cif i contrasenya)
+                String cif= RequereixParametre(input, 0, Const.Dades.CIF); //(String) input.getData(0,String.class);
+                String contrasenya = RequereixParametre(input, 1, Const.Dades.CONTRASENYA); //(String) input.getData(1,String.class);
+
+                RespostaPeticio resposta = loginEmpresa(cif, contrasenya);
+                return gson.toJson(resposta);
             
-            // Buscar l'usuari de la petició a les dades
-            Usuari usuari = usuaris.get(nomusuari);
-            
-            // Si les credencials de la petició coincideixen amb les de la BBDD
-            if(usuari != null && usuari.getContrasenya().equals(contrasenya)){
-                String token = gestorSessions.iniciarSessio(nomusuari); 
-                resposta = new RespostaPeticio(OK_RETURN_CODE, "OK: Usuari connectat correctament");
-                resposta.addDataObject(token); //SESSION_CODE
-            // Si les credencials de la petició NO coincideixen amb les de la BBDD
-            }else {
-                resposta = new RespostaPeticio(ERROR_RETURN_CODE,"ERROR: Accés usuari denegat!");
-            }
-        
-        // Si tipusPeticio LOGIN_EMPRESA 
-        }else if(peticio.equals(LOGIN_EMPRESA)){
-            
-            // Recuperem els parametres de la petició (cif i contrasenya)
-            String cif= (String) input.getData(0,String.class);
-            String contrasenya = (String) input.getData(1,String.class);
-            
-            // Buscar l'empresa de la petició a les dades
-            Empresa empresa = empreses.get(cif);
-            
-            // Si les credencials de la petició coincideixen amb les de la BBDD
-            if(empresa != null && empresa.getContrasenya().equals(contrasenya)){
-                String token = gestorSessions.iniciarSessio(cif); 
-                resposta = new RespostaPeticio(OK_RETURN_CODE, "OK: Empresa connectada correctament");
-                resposta.addDataObject(token);
-            // Si les credencials de la petició NO coincideixen amb les de la BBDD
-            }else {
-                resposta = new RespostaPeticio(ERROR_RETURN_CODE,"ERROR: Accés empresa denegat!");
-            }
-        
-        // Altres tipus tipusPeticio 
-        }else{ 
-            
-            // Només LOGOUT necessita token. La resta: error directe.
-            if (peticio.equals(LOGOUT)) {
-                // Llegim el token de forma segura
-                String token;
-                try {
-                    token = (String)input.getData(0, String.class);
-                } catch (IndexOutOfBoundsException e) {
-                    // No han enviat token
-                    resposta = new RespostaPeticio(ERROR_RETURN_CODE, "Dades insuficients");
+            // Si tipusPeticio USUARI_ADD
+            } else if (peticio.equals(Const.Peticio.USUARI_ADD)){
+                String nomusuari= RequereixParametre(input, 0, Const.Dades.NOM_USUARI); 
+                String contrasenya = RequereixParametre(input, 1, Const.Dades.CONTRASENYA);
+                String nom = RequereixParametre(input, 2, Const.Dades.NOM);
+                String cognoms = RequereixParametre(input, 3, Const.Dades.COGNOMS);
+                
+                RespostaPeticio resposta = afegirUsuari(nomusuari, contrasenya, nom, cognoms);
+                return gson.toJson(resposta);
+                
+            // Si tipusPeticio USUARI_DEL
+            } else if (peticio.equals(Const.Peticio.USUARI_DEL)){
+                String token= RequereixParametre(input, 0, Const.Dades.TOKEN); 
+                String nomusuari = RequereixParametre(input, 1, Const.Dades.NOM_USUARI);
+                
+                RespostaPeticio resposta = eliminarUsuari(nomusuari);
+                return gson.toJson(resposta);
+                
+            // Si tipusPeticio EMPRESA_ADD
+            } else if (peticio.equals(Const.Peticio.EMPRESA_ADD)){
+                String cif = RequereixParametre(input, 0, Const.Dades.CIF);
+                String contrasenya = RequereixParametre(input, 1, Const.Dades.CONTRASENYA);
+                
+                RespostaPeticio resposta = afegirEmpresa(cif, contrasenya);
+                return gson.toJson(resposta);
+                
+            // Si tipusPeticio EMPRESA_DEL
+            } else if (peticio.equals(Const.Peticio.EMPRESA_DEL)){
+                String token= RequereixParametre(input, 0, Const.Dades.TOKEN); 
+                String cif = RequereixParametre(input, 1, Const.Dades.CIF);
+                
+                RespostaPeticio resposta = eliminarEmpresa(cif);
+                return gson.toJson(resposta);
+                
+            // Altres tipus tipusPeticio 
+            }else{
+                // Només LOGOUT necessita token. La resta: error directe.
+                if (peticio.equals(Const.Peticio.LOGOUT)) {
+                    // Llegim el token de forma segura
+                    String token= RequereixParametre(input, 0, Const.Dades.TOKEN); 
+
+                    RespostaPeticio resposta = logout(token);
+                    return gson.toJson(resposta);
+                    
+                } else {
+                    // Petició desconeguda:
+                    RespostaPeticio resposta = new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_PETICIO_INEXISTENT);
                     return gson.toJson(resposta);
                 }
-
-                // Validem el token a GestorSessions
-                if (!gestorSessions.esValida(token)) {
-                    resposta = new RespostaPeticio(ERROR_RETURN_CODE, "Sessió no vàlida");
-                } else {
-                    gestorSessions.borrarSessio(token);
-                    resposta = new RespostaPeticio(OK_RETURN_CODE, "Sessió tancada correctament");
-                }
-
-            } else {
-                // Petició desconeguda:
-                resposta = new RespostaPeticio(ERROR_RETURN_CODE, "Tipus petició no suportat");
+            }
+            
+        } catch(GestorException ex){
+            return gson.toJson(new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_DESCONEGUT + ex.getMessage()));
+        }
+    }
+    
+    private String RequereixParametre(Peticio input, int index, String nom) throws GestorException{
+        Object r = input.getData(index, String.class);
+        if (r == null || input.tamany() <= index){
+            throw new GestorException(Const.Missatge.ERR_PARAMETRE_INEXISTENT + nom);
+        }
+        String s = (String)r;
+        if (s.isBlank()){
+            throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT + nom);
+        }
+        return s;
+    }
+    
+    private RespostaPeticio loginUsuari(String nomUsuari, String contrasenya) {
+        Usuari u = usuaris.buscarPerNomUsuari(nomUsuari);
+        if(u != null && u.getContrasenya().equals(contrasenya)){
+            String sessioExisteix = sessions.buscarTokenUsuari(nomUsuari);
+            if(sessioExisteix != null){
+                sessions.borrarSessio(sessioExisteix);
+            }
+            String token = sessions.iniciarSessio(nomUsuari);
+            RespostaPeticio r = new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_LOGIN_USUARI);
+            r.addDataObject(token);
+            return r;
+        }
+        
+        return new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_LOGIN_USUARI);
+    }
+    
+    private RespostaPeticio loginEmpresa(String cif, String contrasenya){
+        Empresa e = empreses.buscarPerCif(cif);
+        if (e !=null && e.getContrasenya().equals(contrasenya)) {
+            String sessioExisteix = sessions.buscarTokenUsuari(cif);
+            if(sessioExisteix != null){
+                sessions.borrarSessio(sessioExisteix);
+            }
+            String token = sessions.iniciarSessio(cif);
+            RespostaPeticio r = new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_LOGIN_EMPRESA);
+            r.addDataObject(token);
+            return r;
+        }
+        
+        return new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_LOGIN_EMPRESA);
+    }
+    
+    private RespostaPeticio logout(String token){
+        RespostaPeticio r;
+        // Validem el token a GestorSessions
+        if (!sessions.esValida(token)) {
+            r = new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_SESSIO_INVALIDA);
+        } else {
+            sessions.borrarSessio(token);
+            r = new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_SESSIO_TANCADA);
+        }
+        return r;
+    }
+    
+    private RespostaPeticio afegirUsuari(String nomusuari, String contrasenya, String nom, String cognoms) throws GestorException{
+        try{
+            // Comprobar que l'usuari no existeix
+            Usuari usuariExisteix = usuaris.buscarPerNomUsuari(nomusuari);
+            if (usuariExisteix != null){
+                RespostaPeticio r = new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_USUARI_EXISTENT);
+                return r;
             }
 
-            
-//            
-//            // Recuperem el parametres de la petició (token)
-//            String token= (String) input.getData(0,String.class);
-//            
-//            // Comprovar que el token enviat existeix a les sessions, si no és vàlid, enviar resposta d'error
-//            if(!gestorSessions.esValida(token)){ //sessionNumber!=SESSION_CODE
-//                   resposta = new RespostaPeticio(ERROR_RETURN_CODE,"Sessió no vàlida"); 
-//                   
-//            // Sessió existeix, comprovar tipus de peticio per fer una acció o altre
-//            }else if(peticio.equals(LOGOUT)){
-//                gestorSessions.borrarSessio(token);
-//                resposta = new RespostaPeticio(OK_RETURN_CODE, "Sessió tencada correctament");
-//            
-//            // La sessió existeix però no s'ha trobat el tipus de petició
-//            }else{
-//                resposta = new RespostaPeticio(ERROR_RETURN_CODE, "Tipus peticio no suportat");            
-//            }
-        }
-        // Retorna un JSON amb la resposta
-       return gson.toJson(resposta);
+            // Si no existeix, crear un nou usuari
+            Usuari u = new Usuari();
+            u.setNomusuari(nomusuari);
+            u.setContrasenya(contrasenya);
+            u.setNom(nom);
+            u.setCognoms(cognoms);
 
+            // Afegir nou usuari a la BBDD
+            usuaris.inserir(u);
+            
+        }catch(GestorException ge){
+            return new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_USUARI_ADD + ge.getMessage());
+        }catch(Exception e){
+            return new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_USUARI_ADD + e.getMessage());
+            //RespostaPeticio r = new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_USUARI_ADD + e.getMessage());
+            //return r;
+        }
+        
+        // Respondre petició
+        RespostaPeticio r = new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_USUARI_ADD);
+        return r;
+
+        
+        
+    }
+    
+    private RespostaPeticio eliminarUsuari(String nomusuari){
+        // Comprobar que l'usuari existeix
+        Usuari usuariExisteix = usuaris.buscarPerNomUsuari(nomusuari);
+        if (usuariExisteix == null){
+            RespostaPeticio r = new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_USUARI_INEXISTENT);
+            return r;
+        }
+        
+        // Eliminar usuari
+        try{
+            usuaris.eliminar(nomusuari);
+        }catch(Exception ex){
+            RespostaPeticio r = new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_USUARI_DEL + ex.getMessage());
+            return r;
+        }
+        
+        // Respondre petició
+        RespostaPeticio r = new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_USUARI_DEL);
+        return r;
+    }
+    
+    
+    private RespostaPeticio afegirEmpresa(String cif, String contrasenya){
+        // Comprobar que l'usuari no existeix
+        Empresa empresaExisteix = empreses.buscarPerCif(cif);
+        if (empresaExisteix != null){
+            RespostaPeticio r = new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_EMPRESA_EXISTENT);
+            return r;
+        }
+        
+        // Si no existeix, crear nova empresa
+        Empresa e = new Empresa();
+        e.setCif(cif);
+        e.setContrasenya(contrasenya);
+        
+        // Afegir nova empresa a la BBDD
+        try{
+            empreses.inserir(e);
+        }catch(Exception ex){
+            //throw new GestorException("No s'ha pogut crear l'usuari", e);
+            RespostaPeticio r = new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_EMPRESA_ADD + ex.getMessage());
+            return r;
+        }
+        
+        // Respondre petició
+        RespostaPeticio r = new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_EMPRESA_ADD);
+        return r;
+        
+    }
+    
+    private RespostaPeticio eliminarEmpresa(String cif){
+        // Comprobar que l'empresa existeix
+        Empresa empresaExisteix = empreses.buscarPerCif(cif);
+        if (empresaExisteix == null){
+            RespostaPeticio r = new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_EMPRESA_EXISTENT);
+            return r;
+        }
+        
+        // Eliminar empresa
+        try{
+            empreses.eliminar(cif);
+        }catch(Exception ex){
+            RespostaPeticio r = new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, Const.Missatge.ERR_EMPRESA_DEL + ex.getMessage());
+            return r;
+        }
+        
+        // Respondre petició
+        RespostaPeticio r = new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_EMPRESA_DEL);
+        return r;
     }
 }

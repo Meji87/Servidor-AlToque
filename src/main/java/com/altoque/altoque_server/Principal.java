@@ -1,7 +1,17 @@
 
 package com.altoque.altoque_server;
 
+import com.altoque.altoque_server.servei.GestorEmpresa;
+import com.altoque.altoque_server.servei.GestorPeticions;
+import com.altoque.altoque_server.servei.GestorUsuari;
+import com.altoque.altoque_server.servidor.GestorServidor;
 import com.altoque.altoque_server.servidor.ServidorAlToque;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  * Punt d'entrada de l'aplicació.
@@ -9,19 +19,32 @@ import com.altoque.altoque_server.servidor.ServidorAlToque;
  * 
  * * @author marc mestres
  */
+@SpringBootApplication
+@Configuration
+@EnableJpaRepositories
 public class Principal {
+    
+    private final GestorPeticions peticions; // per Spring
+    public Principal(GestorPeticions peticions) { this.peticions = peticions; }
+    
     public static void main(String[] args) {
-        
-        String ip = "localhost";
-        int port = 5050;
-        
-        for (String a : args) {
-            if (a.startsWith("--ip=")) ip = a.substring(5);
-            if (a.startsWith("--port=")) port = Integer.parseInt(a.substring(7));
-        }
-        
-        ServidorAlToque s = new ServidorAlToque(ip, port);
-        s.iniciar();
+        SpringApplication.run(Principal.class, args);
     }
     
+    @Bean
+    ApplicationRunner run(GestorUsuari gestorUsuari, GestorEmpresa gestorEmpresa){
+        return args ->{
+            String ip = "localhost";
+            int port = 5050;
+
+            for (String a : args.getSourceArgs()) {
+                if (a.startsWith("--ip=")) ip = a.substring(5);
+                if (a.startsWith("--port=")) port = Integer.parseInt(a.substring(7));
+            }
+
+            ServidorAlToque s = new ServidorAlToque(ip, port, peticions);
+            s.iniciar();
+        };
+        
+    }
 }

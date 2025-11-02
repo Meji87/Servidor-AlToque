@@ -1,18 +1,30 @@
 
 package com.altoque.altoque_server.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 /**
  * Classe que representa un usuari
  * @author marc mestres
  */
+@Entity
+@Table(name = "usuaris")
 public class Usuari {
-    private String id;
+    
+    //private String id;
+    @Id
+    @Column(unique = true)
     private String nomusuari;
     private String nom;
     private String cognoms;
     private String contrasenya;
     
 
+    public Usuari() {}
+    
     /**
      * Contrueix un usuari espesificant el nom d'usuari i la contrasenya.
      * 
@@ -24,19 +36,27 @@ public class Usuari {
         this.contrasenya = contrasenya;
     }
 
+    public Usuari(String nomusuari, String nom, String cognoms, String contrasenya) {
+        this.nomusuari = nomusuari;
+        this.nom = nom;
+        this.cognoms = cognoms;
+        this.contrasenya = contrasenya;
+    }
+    
+    
     /**
-     * Retorna el valor de nomusuari
+     * Retorna el valor de nomUsuari
      *
-     * @return valor de nomusuari
+     * @return valor de nomUsuari
      */
     public String getNomusuari() {
         return nomusuari;
     }
 
     /**
-     * Estableix el valor de nomusuari
+     * Estableix el valor de nomUsuari
      *
-     * @param nomusuari  nou valor de nomusuari
+     * @param nomusuari  nou valor de nomUsuari
      */
     public void setNomusuari(String nomusuari) {
         this.nomusuari = nomusuari;

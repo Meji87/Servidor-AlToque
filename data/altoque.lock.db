@@ -1,0 +1,6 @@
+#FileLock
+#Sun Nov 02 11:07:17 CET 2025
+hostName=192.168.1.20
+id=19a44090eeb40b723029ec3fcc148c8458af8503b15
+method=file
+server=192.168.1.20\:51423

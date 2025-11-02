@@ -43,6 +43,7 @@ public class DadesPeticio {
         }catch(JsonSyntaxException ex){return null;}
     }
     
+    
     public boolean isDadesBuides(){
         if(data.isEmpty()){
             return true;
@@ -51,5 +52,9 @@ public class DadesPeticio {
             return true;
         }
         return false;
+    }
+    
+    public int tamany(){
+        return data.size();
     }
 }

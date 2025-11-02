@@ -4,6 +4,7 @@ package com.altoque.altoque_server.servidor;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.stereotype.Component;
 
 /**
  * Gestió de sessions en memòria.
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 
  * @author marc mestres
  */
+@Component
 public class GestorSessions {
     private final Map<String, String> sessions = new ConcurrentHashMap<>();    
     
