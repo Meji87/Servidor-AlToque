@@ -10,13 +10,17 @@ public final class Const {
 
     // Tipos de petición que viajan por JSON
     public static final class Peticio {
-        public static final String LOGIN_USUARI  = "LOGIN_USUARI";
-        public static final String LOGIN_EMPRESA = "LOGIN_EMPRESA";
-        public static final String LOGOUT        = "LOGOUT";
-        public static final String USUARI_ADD    = "USUARI_ADD";
-        public static final String USUARI_DEL    = "USUARI_DEL";
-        public static final String EMPRESA_ADD   = "EMPRESA_ADD";
-        public static final String EMPRESA_DEL   = "EMPRESA_DEL";
+        public static final String LOGIN_USUARI             = "LOGIN_USUARI";
+        public static final String LOGIN_EMPRESA            = "LOGIN_EMPRESA";
+        public static final String LOGOUT                   = "LOGOUT";
+        public static final String USUARI_ADD               = "USUARI_ADD";
+        public static final String USUARI_DEL               = "USUARI_DEL";
+        public static final String EMPRESA_ADD              = "EMPRESA_ADD";
+        public static final String EMPRESA_DEL              = "EMPRESA_DEL";
+        public static final String PRODUCTE_ADD             = "PRODUCTE_ADD";
+        public static final String PRODUCTE_DEL             = "PRODUCTE_DEL";
+        public static final String PRODUCTE_LLISTAR         = "PRODUCTE_LLISTAR";
+        public static final String PRODUCTE_EMPRESA_LLISTAR = "PRODUCTE_EMPRESA_LLISTAR";
         private Peticio() {}
     }
 
@@ -35,11 +39,18 @@ public final class Const {
         public static final String NOM          = "nom";
         public static final String COGNOMS      = "cognoms";
         public static final String CIF          = "cif";
+        public static final String DESCRIPCIO   = "descripcio";
+        public static final String PREU         = "preu";
         private Dades() {}
     }
 
     // Mensajes estándar (opcional, si quieres unificarlos)
     public static final class Missatge {
+        public static final String ERR_PETICIO_INEXISTENT   = "ERROR: Tipus de petició no suportat";
+        public static final String ERR_DESCONEGUT           = "ERROR: Desconegut: ";
+        public static final String ERR_PARAMETRE_INEXISTENT = "ERROR: Falta el parametre: ";
+        public static final String ERR_PARAMETRE_BUIT       = "ERROR: El pàrametre és buit: ";
+        
         public static final String OK_SESSIO_TANCADA        = "OK: Sessió tancada correctament";
         public static final String ERR_SESSIO_INVALIDA      = "ERROR: Sessió no vàlida";
         
@@ -62,11 +73,8 @@ public final class Const {
         public static final String ERR_EMPRESA_EXISTENT     = "ERROR: Empresa ja existent";
         public static final String ERR_EMPRESA_INEXISTENT   = "ERROR: L'empresa no existeix";
         
-        public static final String ERR_PETICIO_INEXISTENT   = "ERROR: Tipus de petició no suportat";
-        public static final String ERR_DESCONEGUT           = "ERROR: Desconegut: ";
-        public static final String ERR_PARAMETRE_INEXISTENT = "ERROR: Falta el parametre: ";
-        public static final String ERR_PARAMETRE_BUIT       = "ERROR: El pàrametre és buit: ";
-        // añade aquí los que uses repetidos
+        
+        
         private Missatge() {}
     }
 

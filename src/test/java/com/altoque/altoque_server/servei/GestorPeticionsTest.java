@@ -19,6 +19,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 
 
+//@DataJpaTest
+//@ActiveProfiles("test")
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+
 /**
  *
  * @author marc mestres mejias

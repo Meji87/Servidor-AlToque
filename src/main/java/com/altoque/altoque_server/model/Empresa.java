@@ -1,10 +1,14 @@
 
 package com.altoque.altoque_server.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Classe que representa una empresa
@@ -16,7 +20,12 @@ public class Empresa {
     @Id
     @Column(unique = true)
     String cif;
+    
+    @Column(nullable = false)
     String contrasenya;
+    
+    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = false)
+    private List<Producte> productes = new ArrayList<>();
 
     public Empresa() {}
     
@@ -69,4 +78,14 @@ public class Empresa {
     public void setContrasenya(String contrasenya) {
         this.contrasenya = contrasenya;
     }
+
+    public List<Producte> getProductes() {
+        return productes;
+    }
+
+    public void setProductes(List<Producte> productes) {
+        this.productes = productes;
+    }
+    
+    
 }

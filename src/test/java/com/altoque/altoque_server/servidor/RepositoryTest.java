@@ -18,6 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author mejia
  */
 
+//@DataJpaTest
+//@ActiveProfiles("test")
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+
 @DataJpaTest
 class RepositoryTest {
 
