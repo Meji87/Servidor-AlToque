@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.altoque.altoque_server.servei;
+package com.altoque.altoque_server.gestor;
 
 import com.altoque.altoque_server.dao.UsuariDao;
 import com.altoque.altoque_server.model.Usuari;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author mejia
+ * @author marc mestres
  */
 @Component
 public class GestorUsuari {

@@ -1,9 +1,6 @@
-
 package com.altoque.altoque_server.servidor;
 
-import com.altoque.altoque_server.servei.GestorEmpresa;
-import com.altoque.altoque_server.servei.GestorPeticions;
-import com.altoque.altoque_server.servei.GestorUsuari;
+import com.altoque.altoque_server.gestor.GestorPeticions;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

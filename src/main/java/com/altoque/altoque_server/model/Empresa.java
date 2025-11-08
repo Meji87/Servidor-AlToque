@@ -19,10 +19,13 @@ import java.util.List;
 public class Empresa {
     @Id
     @Column(unique = true)
-    String cif;
+    private String cif;
     
     @Column(nullable = false)
-    String contrasenya;
+    private String contrasenya;
+    
+    @Column
+    private String nom;
     
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<Producte> productes = new ArrayList<>();
@@ -79,6 +82,15 @@ public class Empresa {
         this.contrasenya = contrasenya;
     }
 
+    public String getNom() {
+        return nom;
+    }
+
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    
     public List<Producte> getProductes() {
         return productes;
     }
@@ -87,5 +99,13 @@ public class Empresa {
         this.productes = productes;
     }
     
-    
+    public void afegirProducte(Producte p) {
+    productes.add(p);
+    p.setEmpresa(this);
+}
+
+    public void eliminarProducte(Producte p) {
+        productes.remove(p);
+        p.setEmpresa(null);
+    }
 }

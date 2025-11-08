@@ -1,14 +1,12 @@
-
 package com.altoque.altoque_server.repositori;
 
 import com.altoque.altoque_server.model.Usuari;
-import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
  *
- * @author mejia
+ * @author marc mestres
  */
 @Repository
 public interface UsuariRepositori extends JpaRepository<Usuari, String>{

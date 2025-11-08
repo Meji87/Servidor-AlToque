@@ -13,15 +13,14 @@ import jakarta.persistence.Table;
 
 /**
  *
- * @author mejia
+ * @author marc mestres
  */
 @Entity
 @Table(name = "productes")
 public class Producte {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     
     @Column(nullable = false)
     private String nom;
@@ -35,12 +34,23 @@ public class Producte {
     @ManyToOne(fetch = FetchType.LAZY, optional=false)
     @JoinColumn(name = "empresa_cif", nullable=false) // Usa el @Id de Empresa (cif)
     private Empresa empresa;
+    
+    // Requerid per JPA
+    public Producte() {}
+    
+    public Producte(String nom, String descripcio, long preu, Empresa empresa) {
+        this.nom = nom;
+        this.descripcio = descripcio;
+        this.preu = preu;
+        this.empresa = empresa;
+    }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    // Privat per no exposar-lo
+    private void setId(Long id) {
         this.id = id;
     }
 

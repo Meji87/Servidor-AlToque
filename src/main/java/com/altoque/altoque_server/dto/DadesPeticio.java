@@ -2,8 +2,9 @@
 package com.altoque.altoque_server.dto;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.JsonElement;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Contenidor senzill per als valors d'una petició.
@@ -16,45 +17,81 @@ import java.util.ArrayList;
  * @author marc mestres
  */
 public class DadesPeticio {
-    private ArrayList <String> data = new ArrayList<>();
+    //private List<String> data = new ArrayList<>();
+    private List<JsonElement> data = new ArrayList<>();
     
-    /**
-     * Afegeix un valor a la llista de dades.
-     * Internament es desa com a JSON per poder recuperar-lo com a objecte.
-     * @param data valor a afegir (qualsevol tipus serialitzable a JSON)
-     */
-    public void addDataObject(Object data){
+    public <T> void add(T objecte){
         Gson gson = new Gson();
-        this.data.add(gson.toJson(data));
+        data.add(gson.toJsonTree(objecte));
     }
     
-    /**
-     * Retorna el valor de la posició indicada convertit al tipus demanat.
-     * Si el JSON no es pot convertir, retorna null.
-     * @param index posició del paràmetre (0, 1, 2...)
-     * @param clase classe/Tipus a convertir (p. ex. String.class, Integer.class)
-     * @return l'objecte convertit o null si la conversió falla
-     * 
-     */
-    public Object getData(int index, Class clase){
-        try{
-            Gson gson = new Gson();
-            return gson.fromJson(data.get(index),clase);
-        }catch(JsonSyntaxException ex){return null;}
+    public <T> T get(int index, Class<T> clase){
+        Gson gson = new Gson();
+        return gson.fromJson(data.get(index), clase);
     }
     
-    
-    public boolean isDadesBuides(){
-        if(data.isEmpty()){
-            return true;
-        }
-        if(data.size()<1){
-            return true;
-        }
-        return false;
+    public boolean esDataBuit (){
+        return data == null || data.isEmpty();
     }
     
-    public int tamany(){
+    public int sizeData(){
+        if (esDataBuit()) return 0;
         return data.size();
     }
+    
+//    /**
+//     * Afegeix un valor a la llista de dades.
+//     * Internament es desa com a JSON per poder recuperar-lo com a objecte.
+//     * @param data valor a afegir (qualsevol tipus serialitzable a JSON)
+//     */
+//    public void addDataObject(Object data){
+//        if (this.data == null) this.data = new ArrayList<>();
+//        Gson gson = new Gson();
+//        this.data.add(gson.toJson(data));
+//    }
+//    
+//    /**
+//     * Retorna el valor de la posició indicada convertit al tipus demanat.
+//     * Si el JSON no es pot convertir, retorna null.
+//     * @param index posició del paràmetre (0, 1, 2...)
+//     * @param clase classe/Tipus a convertir (p. ex. String.class, Integer.class)
+//     * @return l'objecte convertit o null si la conversió falla
+//     * 
+//     */
+//    public Object getData(int index, Class clase){
+//        try{
+//            Gson gson = new Gson();
+//            return gson.fromJson(data.get(index),clase);
+//        }catch(JsonSyntaxException ex){return null;}
+//    }
+//    
+//    
+//    
+//    public boolean isDadesBuides(){
+//        if(data.isEmpty()){
+//            return true;
+//        }
+//        if(data.size()<1){
+//            return true;
+//        }
+//        return false;
+//    }
+//    
+//    public int tamany(){
+//        return data.size();
+//    }
+//
+//    public List<String> getData() {
+//        return data;
+//    }
+//
+//    public void setData(String data) {
+//        this.data.add(data);
+//    }
+//    
+//    public void setData(List <String> data) {
+//        this.data =data;
+//    }
+//    
+    
 }

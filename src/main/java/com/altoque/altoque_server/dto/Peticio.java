@@ -16,6 +16,7 @@ package com.altoque.altoque_server.dto;
  */
 public class Peticio extends DadesPeticio {
     private String peticio; 
+    private String token;
 
     /**
      * Default constructor
@@ -33,12 +34,30 @@ public class Peticio extends DadesPeticio {
         super();
         this.peticio = peticio;
     }
+    
+    /**
+     * Crea una petició indicant el seu nom/tipus.
+     * @param peticio identificador de la petició (p. ex. "LOGIN_USUARI")
+     */
+    public Peticio(String peticio, String token) {
+        super();
+        this.peticio = peticio;
+        this.token = token;
+    }
 
     /**
      * @return el nom/tipus de la petició (p. ex. "LOGIN_USUARI")
      */
     public String getPeticio() {
         return peticio;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
     
     

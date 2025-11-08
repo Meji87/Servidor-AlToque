@@ -1,175 +1,432 @@
 
+
 package com.altoque.altoque_server.client;
 
 import com.altoque.altoque_server.Const;
-import com.altoque.altoque_server.dto.RespostaPeticio;
+import com.altoque.altoque_server.Const.Rol;
 import com.altoque.altoque_server.dto.Peticio;
+import com.altoque.altoque_server.dto.RespostaPeticio;
 import com.google.gson.Gson;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
+import com.altoque.altoque_server.dto.ProducteDto;
+import com.altoque.altoque_server.model.Empresa;
+
 
 /**
- * Client de proves.
- * Obre un socket, envia una petició en JSON i mostra la resposta del servidor.
- * Per comprovar el flux.
+ * Client de consola senzill per a AlToque.
+ * - Menús clars i curts
+ * - Un únic mètode send(...) per protocol
+ * - Login únic; el servidor decideix el rol
+ * - Alta usuari/empresa des de la pantalla principal
+ * - Eliminar el propi usuari/empresa des de la sessió (esborra BBDD i sessió)
  * 
  * @author marc mestres
  */
 public class Client {
-    
-    public static void main(String[] args) {
-        
-        Scanner scanner = new Scanner(System.in);
-        boolean sortir = false;
-        
-        while(!sortir){
-            
-            RespostaPeticio r = new RespostaPeticio();
-            System.out.println("-----------------------------------------");
-            System.out.println("Tipus peticio:");
-            System.out.println("[1] LOGIN");
-            System.out.println("[2] LOGOUT");
-            System.out.println("[3] AFEGIR");
-            System.out.println("[4] ELIMINAR");
-            System.out.println("[Altre] SORTIR");
-            String tipus = scanner.nextLine();
 
-            if (tipus.equals("1")){
-                System.out.println("***** Login *****");
-                System.out.println(" [1] USUARI");
-                System.out.println(" [2] EMPRESA: ");
-                String rol = scanner.nextLine();
-                System.out.println("Introdueix el nom d'usuari o cif: ");
-                String nomUsuari = scanner.nextLine();
-                System.out.println("Introdueix la contrasenya: ");
-                String contrasenya = scanner.nextLine();
-                
-                if (rol.equals("1")){
-                    Peticio loginUsuari = new Peticio(Const.Peticio.LOGIN_USUARI);
-                    loginUsuari.addDataObject(nomUsuari);
-                    loginUsuari.addDataObject(contrasenya);
-                    RespostaPeticio res = processar(loginUsuari);
-                    r = res;
-                } else {
-                    Peticio loginEmpresa = new Peticio(Const.Peticio.LOGIN_EMPRESA);
-                    loginEmpresa.addDataObject(nomUsuari);
-                    loginEmpresa.addDataObject(contrasenya);
-                    RespostaPeticio res = processar(loginEmpresa);
-                    r = res;
-                }
-                
-            } else if(tipus.equals("2")){
-                System.out.println("***** Logout *****");
-                System.out.println("Introdueix el token: ");
-                String token = scanner.nextLine();
-                Peticio logout = new Peticio(Const.Peticio.LOGOUT);
-                logout.addDataObject(token);
-                RespostaPeticio res = processar(logout);
-                r = res;
-                
-            } else if(tipus.equals("3")){
-                System.out.println("***** Afegir *****");
-                System.out.println(" [1] USUARI");
-                System.out.println(" [2] EMPRESA: ");
-                String rol = scanner.nextLine();
-                System.out.println("Introdueix el nom d'usuari o cif: ");
-                String nomUsuari = scanner.nextLine();
-                System.out.println("Introdueix la contrasenya: ");
-                String contrasenya = scanner.nextLine();
-                
-                if (rol.equals("1")){
-                    Peticio addUsuari = new Peticio(Const.Peticio.USUARI_ADD);
-                    System.out.println("Introdueix el nom: ");
-                    String nom = scanner.nextLine();
-                    System.out.println("Introdueix els cognoms: ");
-                    String cognoms = scanner.nextLine();
-                    addUsuari.addDataObject(nomUsuari);
-                    addUsuari.addDataObject(contrasenya);
-                    addUsuari.addDataObject(nom);
-                    addUsuari.addDataObject(cognoms);
-                    
-                    RespostaPeticio res = processar(addUsuari);
-                    r = res;
-                } else {
-                    Peticio addEmpresa = new Peticio(Const.Peticio.EMPRESA_ADD);
-                    addEmpresa.addDataObject(nomUsuari);
-                    addEmpresa.addDataObject(contrasenya);
-                    RespostaPeticio res = processar(addEmpresa);
-                    r = res;
-                }
-                
-            } else if(tipus.equals("4")){
-                System.out.println("***** Eliminar *****");
-                System.out.println(" [1] USUARI");
-                System.out.println(" [2] EMPRESA: ");
-                String rol = scanner.nextLine();
-                System.out.println("Introdueix el token: ");
-                String token = scanner.nextLine();
-                System.out.println("Introdueix el nom d'usuari o cif: ");
-                String nomUsuari = scanner.nextLine();
-                
-                
-                if (rol.equals("1")){
-                    Peticio addUsuari = new Peticio(Const.Peticio.USUARI_DEL);
-                    addUsuari.addDataObject(token);
-                    addUsuari.addDataObject(nomUsuari);
-                    RespostaPeticio res = processar(addUsuari);
-                    r = res;
-                } else {
-                    Peticio addEmpresa = new Peticio(Const.Peticio.EMPRESA_DEL);
-                    addEmpresa.addDataObject(token);
-                    addEmpresa.addDataObject(nomUsuari);
-                    RespostaPeticio res = processar(addEmpresa);
-                    r = res;
-                }
-                
-            } else {
-                    sortir = true;
+    // === Config ===
+    private static final String HOST = "localhost";
+    private static final int    PORT = 5050;
+
+    // === Estat de la sessió local ===
+    private String token = null;
+    private Rol rol = null;
+    private String nomUsuari = null; // pot ser nom d'usuari o CIF visible
+
+    // === Infra ===
+    private final Scanner in = new Scanner(System.in);
+    private final Gson gson = new Gson();
+
+    public static void main(String[] args) {
+        new Client().run();
+    }
+
+    private void run() {
+        System.out.println("-----------------------------------------");
+        System.out.println("          AlToque – Client CLI           ");
+        System.out.println("-----------------------------------------");
+
+        while (true) {
+            if (token == null) {
+                if (!menuPrincipal()) break;
+            } else if (rol == Rol.USUARI) {
+                if (!menuUsuari()) break;
+            } else { // EMPRESA
+                if (!menuEmpresa()) break;
             }
-            System.out.println();
-            System.out.println("RESPOSTA SERVIDOR:");
-            System.out.println("Codi: " + r.getCodi());
-            System.out.println("Missatge: " + r.getMissatge());
-            if (r.getCodi()==0 && !r.isDadesBuides()){
-                System.out.println("Token: " + r.getData(0, String.class));
-            }
-            
-            
+        }
+        System.out.println("Adeu! ");
+    }
+
+    // ============================
+    // Menú principal (sense sessió)
+    // ============================
+    private boolean menuPrincipal() {
+        System.out.println();
+        System.out.println("***** Menú principal *****");
+        System.out.println(" [1] Alta USUARI");
+        System.out.println(" [2] Alta EMPRESA");
+        System.out.println(" [3] Login");
+        System.out.println(" [0] Sortir");
+
+        int op = askInt("Opció: ", -1);
+        switch (op) {
+            case 1 -> actionAltaUsuari();
+            case 2 -> actionAltaEmpresa();
+            case 3 -> actionLogin();
+            case 0 -> { return false; }
+            default -> System.out.println("Opció no vàlida.");
+        }
+        return true;
+    }
+
+    // ============================
+    // Menú USUARI
+    // ============================
+    private boolean menuUsuari() {
+        headerSessio();
+        System.out.println("***** Menú USUARI *****");
+        System.out.println(" [1] Whoami / Veure token");
+        System.out.println(" [2] Eliminar el meu USUARI");
+        System.out.println(" [3] Veure empreses");
+        System.out.println(" [9] Logout");
+        System.out.println(" [0] Sortir");
+
+        int op = askInt("Opció: ", -1);
+        switch (op) {
+            case 1 -> actionWhoAmI();
+            case 2 -> actionEliminarPropiCompte(); // esborra usuari + sessió
+            case 3 -> actionEmpresaLlistar();
+            case 9 -> actionLogout();
+            case 0 -> { return false; }
+            default -> System.out.println("Opció no vàlida.");
+        }
+        return true;
+    }
+
+    // ============================
+    // Menú EMPRESA
+    // ============================
+    private boolean menuEmpresa() {
+        headerSessio();
+        System.out.println("***** Menú EMPRESA *****");
+        System.out.println(" [1] Whoami / Veure token");
+        System.out.println(" [2] Eliminar la meva EMPRESA");
+        System.out.println(" [3] Afegir producte");
+        System.out.println(" [4] Eliminar producte");
+        System.out.println(" [5] Llistar productes (tots)");
+        System.out.println(" [6] Llistar productes de la meva empresa");
+        System.out.println(" [9] Logout");
+        System.out.println(" [0] Sortir");
+
+        int op = askInt("Opció: ", -1);
+        switch (op) {
+            case 1 -> actionWhoAmI();
+            case 2 -> actionEliminarPropiCompte(); // esborra empresa + sessió
+            case 3 -> actionProducteAdd();
+            case 4 -> actionProducteDel();
+            case 5 -> actionProducteLlistar();
+            case 6 -> actionProducteLlistarEmpresa();
+            case 9 -> actionLogout();
+            case 0 -> { return false; }
+            default -> System.out.println("Opció no vàlida.");
+        }
+        return true;
+    }
+
+    // ==========
+    // ACCIONS
+    // ==========
+
+    // Alta usuari (des de pantalla principal)
+    private void actionAltaUsuari() {
+        System.out.println("\n***** Alta USUARI *****");
+        String nomUsuari = askStr("Nom d'usuari: ", true);
+        String nom       = askStr("Nom: ", true);
+        String cognoms       = askStr("Cognoms: ", true);
+        String pwd       = askStr("Contrasenya: ", true);
+
+        Peticio p = new Peticio(Const.Peticio.USUARI_ADD);
+        p.add(nomUsuari);
+        p.add(pwd);
+        p.add(nom);
+        p.add(cognoms);
+
+        printResposta(send(p));
+    }
+
+    // Alta empresa (des de pantalla principal)
+    private void actionAltaEmpresa() {
+        System.out.println("\n***** Alta EMPRESA *****");
+        String cif = askStr("CIF: ", true);
+        //String nom = askStr("Nom empresa: ", true);
+        String pwd = askStr("Contrasenya: ", true);
+
+        Peticio p = new Peticio(Const.Peticio.EMPRESA_ADD);
+        p.add(cif);
+        //p.addDataObject(nom);
+        p.add(pwd);
+
+        printResposta(send(p));
+    }
+
+    // Login únic (el servidor decideix rol)
+    private void actionLogin() {
+        System.out.println("\n***** Login *****");
+        String usu = askStr("Usuari/CIF: ", true);
+        String pwd = askStr("Contrasenya: ", true);
+
+        Peticio p = new Peticio(Const.Peticio.LOGIN);
+        p.add(usu);
+        p.add(pwd);
+
+        RespostaPeticio r = send(p);
+        if (!printResposta(r)) return;
+
+        // Esperem: [token, rol, nomVisible?]
+        this.token = (String)r.get(0, String.class);
+        this.rol   = Rol.valueOf( r.get(1, String.class));
+        this.nomUsuari = (r.sizeData() >= 3) ? (String) r.get(2, String.class) : usu;
+
+        System.out.printf("Sessió iniciada com a %s%n", rol.name());
+    }
+
+    // Logout
+    private void actionLogout() {
+        if (token == null) { System.out.println("No hi ha sessió."); return; }
+
+        Peticio p = new Peticio(Const.Peticio.LOGOUT, token);
+        //p.addDataObject(token);
+
+        if (printResposta(send(p))) {
+            token = null; rol = null; nomUsuari = null;
         }
     }
+
+    // Whoami (mostrar dades locals)
+    private void actionWhoAmI() {
+        if (token == null) { System.out.println("No hi ha sessió."); return; }
+        System.out.println("\n— Sessió —");
+        System.out.println(" Usuari visible: " + nomUsuari);
+        System.out.println(" Rol: " + rol);
+        System.out.println(" Token: " + token);
+    }
+
+    // Eliminar compte propi (USUARI o EMPRESA) + tancar sessió
+    private void actionEliminarPropiCompte() {
+        if (token == null) { System.out.println("No hi ha sessió."); return; }
+
+        String miss = (rol == Rol.USUARI)
+                ? "Segur que vols eliminar el teu USUARI? (s/n): "
+                : "Segur que vols eliminar la teva EMPRESA? (s/n): ";
+        if (!confirm(miss)) return;
+
+        String ordre = (rol == Rol.USUARI) ? Const.Peticio.USUARI_DEL : Const.Peticio.EMPRESA_DEL;
+
+        Peticio p = new Peticio(ordre, token);
+        // Enviem només token; el servidor troba el subject i el rol a la sessió
+        //p.addDataObject(token);
+
+        RespostaPeticio r = send(p);
+        if (printResposta(r)) {
+            // Si s'ha esborrat, la sessió ja no té sentit
+            token = null; rol = null; nomUsuari = null;
+        }
+    }
+
+    // ——— PRODUCTES (només EMPRESA) ———
+
+    private void actionProducteAdd() {
+        ensureSessioEmpresa();
+
+        System.out.println("\n***** Afegir producte *****");
+        String nom  = askStr("Nom del producte: ", true);
+        String descripcio = askStr("Descripcio: ", true);
+        String preu = askStr("Preu: ", true);
+
+        Peticio p = new Peticio(Const.Peticio.PRODUCTE_ADD, token);
+        //p.addDataObject(token);
+        p.add(nom);
+        p.add(descripcio);
+        p.add(preu);
+
+        printResposta(send(p));
+    }
+
+    private void actionProducteDel() {
+        ensureSessioEmpresa();
+
+        String id = askStr("\nID producte a eliminar: ", true);
+
+        Peticio p = new Peticio(Const.Peticio.PRODUCTE_DEL, token);
+        //p.addDataObject(token);
+        p.add(id);
+
+        printResposta(send(p));
+    }
+
+    private void actionProducteLlistar() {
+        ensureSessioEmpresa();
+
+        Peticio p = new Peticio(Const.Peticio.PRODUCTE_LLISTAR, token);
+        //p.addDataObject(token);
+
+        RespostaPeticio r = send(p);
+        if (!printResposta(r)) return;
+        printProductes(r);
+    }
     
-    private static RespostaPeticio processar(Peticio message){
-        try {       
-            Socket socket = new Socket("localhost", 5050);
-            Gson gson= new Gson();
+    
+    private void actionProducteLlistarEmpresa() {
+        ensureSessioEmpresa();
+        Peticio p = new Peticio(Const.Peticio.PRODUCTE_LLISTAR, token);
+        // El servidor espera un CIF opcional, no el token:
+        p.add(nomUsuari); // nomUsuari en sesión de EMPRESA es el CIF visible
+        RespostaPeticio r = send(p);
+        if (!printResposta(r)) return;
+        printProductes(r);
+    }
+    
+    private void actionEmpresaLlistar() {
 
-            if(socket==null) return null;
+        Peticio p = new Peticio(Const.Peticio.EMPRESA_LLISTAR, token);
+        //p.addDataObject(token);
 
-            PrintWriter output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-            output.println(gson.toJson(message));
-            
-            //System.out.println(message.getPeticio());
+        RespostaPeticio r = send(p);
+        if (!printResposta(r)) return;
+        printEmpreses(r);
+    }
 
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream())); 
+    // ==========
+    // Helpers
+    // ==========
 
-            String data = input.readLine();
-            //System.out.println("Resposta del servido: " + data);
+    private void headerSessio() {
+        System.out.printf("%nSessió: %s (%s)%n", nomUsuari, rol);
+    }
 
-            RespostaPeticio resposta = gson.fromJson(data,RespostaPeticio.class);
+    private boolean printResposta(RespostaPeticio r) {
+        if (r == null) { System.out.println("No hi ha resposta del servidor."); return false; }
+        System.out.printf("%s (codi=%d)%n", r.getMissatge(), r.getCodi());
+        return r.getCodi() == Const.Resposta.OK_RETURN_CODE;
+    }
 
-            socket.close();
+//    private void printLlista(RespostaPeticio r) {
+//        int n = r.sizeData();
+//        if (n == 0) { System.out.println("(sense dades)"); return; }
+//        System.out.println("— Dades —");
+//        for (int i = 0; i < n; i++) {
+//            System.out.println("num dades: " + n);
+//            // Si el servidor envia objectes, canvia String.class pel teu tipus
+//            String item = (String) r.get(i, String.class);
+//            System.out.println(" · " + item);
+//        }
+//    }
+    
+//    private void printLlista(RespostaPeticio r) {
+//        if (r.sizeData() == 0) { System.out.println("(sense dades)"); return; }
+//        
+//        Usuari [] users={};
+//        users = ( Usuari[]) r.get(0, users.getClass());
+//
+//        Type listType = new TypeToken<java.util.List<ProducteDto>>() {}.getType();
+//        java.util.List<ProducteDto> llista = r.get(0, listType);
+//
+//        if (llista == null || llista.isEmpty()) { System.out.println("(sense productes)"); return; }
+//
+//        System.out.println("— Productes —");
+//        for (ProducteDto pr : llista) {
+//            System.out.printf(" · [%d] %s — %d €%s%n",
+//                    pr.id, pr.nom, pr.preu,
+//                    pr.empresaCif != null ? (" (" + pr.empresaCif + ")") : "");
+//        }
+//    }
+    
+    private void printProductes(RespostaPeticio r) {
+        ProducteDto[] arr = r.get(0, ProducteDto[].class);  
+        if (arr == null || arr.length == 0) { System.out.println("(sense productes)"); return; }
+        System.out.println("— Productes —");
+        for (ProducteDto p : arr) {
+            System.out.printf(" · [%s] %s — %d €%n", p.id, p.nom, p.preu ,
+                    p.empresaCif != null ? "(" + p.empresaCif + ")" : "");
+        }
+    }
 
-            return resposta;
+    private void printEmpreses(RespostaPeticio r) {
+        Empresa[] arr = r.get(0, Empresa[].class);
+        if (arr == null || arr.length == 0) { System.out.println("(sense empreses)"); return; }
+        System.out.println("— Empreses —");
+        for (Empresa e : arr) {
+            System.out.printf(" · %s%n", e.getCif());
+        }
+    }
 
-        } catch (IOException ex) {
+
+    private void ensureSessioEmpresa() {
+        if (token == null || rol != Rol.EMPRESA) {
+            throw new IllegalStateException("Cal sessió d'EMPRESA per aquesta acció.");
+        }
+    }
+
+    // ===========================
+    // I/O protocol JSON per línia
+    // ===========================
+    private RespostaPeticio send(Peticio peticio) {
+        try (Socket socket = new Socket(HOST, PORT);
+             PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+             BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+            String json = gson.toJson(peticio);
+            out.println(json);
+
+            String respostaJson = br.readLine();
+            if (respostaJson == null) return null;
+
+            return gson.fromJson(respostaJson, RespostaPeticio.class);
+        } catch (IOException e) {
+            System.out.println("Error de connexió: " + e.getMessage());
             return null;
         }
-
     }
-    
+
+    // ===========================
+    // Lectura de dades per consola
+    // ===========================
+    private String askStr(String prompt, boolean required) {
+        while (true) {
+            System.out.print(prompt);
+            String s = in.nextLine();
+            if (!required || (s != null && !s.isBlank())) return s.trim();
+            System.out.println("Valor obligatori.");
+        }
+    }
+
+    private int askInt(String prompt, int defaultVal) {
+        while (true) {
+            System.out.print(prompt);
+            String s = in.nextLine();
+            if (s == null || s.isBlank()) return defaultVal;
+            try { return Integer.parseInt(s.trim()); }
+            catch (NumberFormatException e) { System.out.println("Introdueix un número."); }
+        }
+    }
+
+    private double askDouble(String prompt, double defaultVal) {
+        while (true) {
+            System.out.print(prompt);
+            String s = in.nextLine();
+            if (s == null || s.isBlank()) return defaultVal;
+            try { return Double.parseDouble(s.trim()); }
+            catch (NumberFormatException e) { System.out.println("Introdueix un número (ex: 1.25)."); }
+        }
+    }
+
+    private boolean confirm(String prompt) {
+        System.out.print(prompt);
+        String s = in.nextLine();
+        return s != null && s.trim().equalsIgnoreCase("s");
+    }
 }
+

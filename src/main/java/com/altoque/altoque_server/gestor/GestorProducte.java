@@ -1,5 +1,5 @@
 
-package com.altoque.altoque_server.servei;
+package com.altoque.altoque_server.gestor;
 
 import com.altoque.altoque_server.dao.ProducteDao;
 import com.altoque.altoque_server.model.Producte;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 /**
  *
- * @author mejia
+ * @author marc mestres
  */
 @Service
 public class GestorProducte {
@@ -27,8 +27,8 @@ public class GestorProducte {
      * @param producte l'usuari a afegir
      * @throws GestorException si l'usuari ja existeix
      */
-    public void inserir(Producte producte) throws GestorException {
-        producteDao.crear(producte);
+    public Producte inserir(Producte producte) throws GestorException {
+        return producteDao.crear(producte);
     }
     
     /**
@@ -37,7 +37,7 @@ public class GestorProducte {
      * @param idProducte el codi de l'usuari
      * @throws GestorException si l'usuari no existeix
      */
-    public void eliminar(String idProducte) throws GestorException {
+    public void eliminar(Long idProducte) throws GestorException {
         producteDao.eliminar(idProducte);
     }
         

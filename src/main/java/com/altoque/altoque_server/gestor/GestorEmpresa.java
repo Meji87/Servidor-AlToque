@@ -1,8 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.altoque.altoque_server.servei;
+
+package com.altoque.altoque_server.gestor;
 
 import com.altoque.altoque_server.dao.EmpresaDao;
 import com.altoque.altoque_server.model.Empresa;
@@ -13,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author mejia
+ * @author marc mestres
  */
 @Component
 public class GestorEmpresa {
@@ -47,4 +44,6 @@ public class GestorEmpresa {
     public List<Empresa> llistar(){
         return empresaDao.llistarEmpreses();
     }
+
+
 }

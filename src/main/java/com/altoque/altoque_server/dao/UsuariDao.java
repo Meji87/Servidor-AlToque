@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author mejia
+ * @author marc mestres
  */
 @Component
 public class UsuariDao {

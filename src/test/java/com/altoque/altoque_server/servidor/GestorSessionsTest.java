@@ -1,6 +1,9 @@
 
 package com.altoque.altoque_server.servidor;
 
+import com.altoque.altoque_server.Const;
+import com.altoque.altoque_server.gestor.GestorSessions;
+import com.altoque.altoque_server.model.Sessio;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,8 +19,9 @@ public class GestorSessionsTest {
     @Test
     void iniciarSessio() {
         GestorSessions s = new GestorSessions();
-        String token = s.iniciarSessio("M13");
-        assertNotNull(token, "El token no pot ser null");
+        Sessio sessio = s.iniciarSessio("Meji87", Const.Rol.USUARI);
+        String token = sessio.getToken();
+        assertNotNull(sessio, "El token no pot ser null");
         assertTrue(s.esValida(token), "El token hauria de ser vàlid tot just crear-se");
     }
     
@@ -27,7 +31,8 @@ public class GestorSessionsTest {
     @Test
     void validarSessio(){
         GestorSessions s = new GestorSessions();
-        String token = s.iniciarSessio("M13");
+        Sessio sessio = s.iniciarSessio("Meji87", Const.Rol.USUARI);
+        String token = sessio.getToken();
         assertTrue(s.esValida(token), "El token hauria de ser vàlid tot just crear-se");
     }
     
@@ -37,8 +42,9 @@ public class GestorSessionsTest {
     @Test
     void buscarTokenUsuari(){
         GestorSessions s = new GestorSessions();
-        String token = s.iniciarSessio("M13");
-        assertEquals(token, s.buscarTokenUsuari("M13"), "Hauria de trobar el token per l'usuari");
+        Sessio sessio = s.iniciarSessio("Meji87", Const.Rol.USUARI);
+        String token = sessio.getToken();
+        assertEquals(token, s.buscarSessio(sessio.getToken()), "Hauria de trobar el token per l'usuari");
     }
     
     /**
@@ -47,8 +53,9 @@ public class GestorSessionsTest {
     @Test
     void sortirSessio(){
         GestorSessions s = new GestorSessions();
-        String token = s.iniciarSessio("M13");
-        s.borrarSessio(token);
+        Sessio sessio = s.iniciarSessio("Meji87", Const.Rol.USUARI);
+        String token = sessio.getToken();
+        s.tancarSessio(token);
         assertFalse(s.esValida(token), "Després del logout el token no ha de ser vàlid");
     }
     
@@ -58,6 +65,6 @@ public class GestorSessionsTest {
     @Test
     void usuariSenseSessio() {
         GestorSessions s = new GestorSessions();
-        assertNull(s.buscarTokenUsuari("inexistent"), "Un usuari sense sessió no ha de tenir token");
+        assertNull(s.buscarSessio("inexistent"), "Un usuari sense sessió no ha de tenir token");
     }
 }

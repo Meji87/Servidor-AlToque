@@ -7,26 +7,25 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 /**
  *
  * @author marc mestres
  */
 @Entity
-public class LiniaComanda {
+@Table(name="pack_items")
+public class PackItem {
     @Id 
-    @GeneratedValue(strategy=GenerationType.IDENTITY) 
-    Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
     
     @ManyToOne(optional=false) 
-    Comanda comanda;
+    private Pack pack;
     
     @ManyToOne(optional=false) 
-    Producte producte;
+    private Producte producte;
     
     @Column(nullable=false) 
-    Integer quantitat;
-    
-    @Column(nullable=false) 
-    long preuUnitari; // “precio congelado”
+    private int quantitat;
 }

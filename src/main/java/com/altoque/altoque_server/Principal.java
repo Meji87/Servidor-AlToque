@@ -1,10 +1,9 @@
 
 package com.altoque.altoque_server;
 
-import com.altoque.altoque_server.servei.GestorEmpresa;
-import com.altoque.altoque_server.servei.GestorPeticions;
-import com.altoque.altoque_server.servei.GestorUsuari;
-import com.altoque.altoque_server.servidor.GestorServidor;
+import com.altoque.altoque_server.gestor.GestorEmpresa;
+import com.altoque.altoque_server.gestor.GestorPeticions;
+import com.altoque.altoque_server.gestor.GestorUsuari;
 import com.altoque.altoque_server.servidor.ServidorAlToque;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author mejia
+ * @author marc mestres
  */
 @Component
 public class ProducteDao {
@@ -31,7 +31,7 @@ public class ProducteDao {
         return producteRepo.findByEmpresa_Cif(cif);
     }
     
-    public void eliminar(String id){
+    public void eliminar(Long id){
         producteRepo.deleteById(id);
     }
     

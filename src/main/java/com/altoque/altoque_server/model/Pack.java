@@ -6,27 +6,30 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 /**
  *
  * @author marc mestres
  */
 @Entity
-public class LiniaComanda {
+@Table(name="packs")
+public class Pack {
     @Id 
-    @GeneratedValue(strategy=GenerationType.IDENTITY) 
-    Long id;
-    
-    @ManyToOne(optional=false) 
-    Comanda comanda;
-    
-    @ManyToOne(optional=false) 
-    Producte producte;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
     
     @Column(nullable=false) 
-    Integer quantitat;
+    private String nom;
     
     @Column(nullable=false) 
-    long preuUnitari; // “precio congelado”
+    private long preu;     // céntimos
+    @ManyToOne(optional=false) 
+    @JoinColumn(name="empresa_cif")
+    private Empresa empresa;
+    // visibilidad, descripción, etc.
 }
+
+

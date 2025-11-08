@@ -1,9 +1,6 @@
-
 package com.altoque.altoque_server.servidor;
 
-import com.altoque.altoque_server.servei.GestorEmpresa;
-import com.altoque.altoque_server.servei.GestorPeticions;
-import com.altoque.altoque_server.servei.GestorUsuari;
+import com.altoque.altoque_server.gestor.GestorPeticions;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -49,9 +46,13 @@ public class ServidorAlToque {
             System.out.println("Servidor iniciat al port " + PORT);
 
             while (true) {
-                System.out.println("Esperant connexions dels clients");
+                System.out.println("Esperant connexions dels clients...");
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Nova connexió acceptada");
+                System.out.println("    InetAdress:         " + clientSocket.getInetAddress());
+                System.out.println("    LocalAddress:       " + clientSocket.getLocalAddress());
+                System.out.println("    LocalSocketAddress: " + clientSocket.getLocalSocketAddress());
+                
 
                 // Creem un nou fil per cada client
                 new GestorServidor(clientSocket, gestorPeticions).start();

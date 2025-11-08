@@ -13,14 +13,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import static java.lang.System.Logger.Level.ALL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
- * @author mejia
+ * @author marc mestres
  */
 
 @Entity
@@ -34,9 +33,6 @@ public class Comanda {
     
     @Column(nullable=false) 
     Instant creadaEl;
-    
-//    @Enumerated(EnumType.STRING) 
-//    EstatComanda estat; // PENDENT, PAGADA, ENVIADA...
     
     @OneToMany(mappedBy = "comanda", cascade = CascadeType.ALL, orphanRemoval = true)
     List<LiniaComanda> linies = new ArrayList<>();
