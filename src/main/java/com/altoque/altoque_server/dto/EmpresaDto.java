@@ -15,9 +15,6 @@ public class EmpresaDto {
     public EmpresaDto(String cif, String nom) {
         this.cif = cif;
         this.nom = nom;
-    }
-
-    
-    
+    }  
     
 }

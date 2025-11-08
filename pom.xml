@@ -10,9 +10,9 @@
 	</parent>
 	<groupId>com.altoque</groupId>
 	<artifactId>altoque-server</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.2</version>
 	<name>altoque-server</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Servidor per l'aplicació AlToque</description>
 	<url/>
 	<licenses>
 		<license/>

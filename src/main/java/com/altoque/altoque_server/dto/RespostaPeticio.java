@@ -1,7 +1,4 @@
-
 package com.altoque.altoque_server.dto;
-
-
 
 /**
  * Resposta del servidor a una petició.
@@ -44,31 +41,6 @@ public class RespostaPeticio extends DadesPeticio{
         this.codi = codi;
         this.missatge = missatge;
     }
-    
-//    /**
-//     * Crea una resposta amb codi, missatge i dades.
-//     * @param codi codi d'estat (0 Ok, 1 Error)
-//     * @param missatge descripció breu
-//     * @param data dada a enviar
-//     */
-//    public RespostaPeticio(int codi, String missatge, String data) {
-//        this.codi = codi;
-//        this.missatge = missatge;
-//        super.setData(data);
-//        
-//    }
-//    
-//        /**
-//     * Crea una resposta amb codi, missatge i dades.
-//     * @param codi codi d'estat (0 Ok, 1 Error)
-//     * @param missatge descripció breu
-//     * @param data llista amb les dades a enviar
-//     */
-//    public RespostaPeticio(int codi, String missatge, List<String> data) {
-//        this.codi = codi;
-//        this.missatge = missatge;
-//        super.setData(data);
-//    }
     
     /**
      * Retorna el valor de codi

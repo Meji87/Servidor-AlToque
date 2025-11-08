@@ -67,16 +67,16 @@ public class GestorPeticionsTest {
         //GestorPeticions gestor = new GestorPeticions(new GestorSessions());
         // AFEGIR_USUARI
         Peticio alta = new Peticio(Const.Peticio.USUARI_ADD);
-        alta.add("M13");
-        alta.add("123");
-        alta.add("Marc");
-        alta.add("Mestres");
+        alta.addData("M13");
+        alta.addData("123");
+        alta.addData("Marc");
+        alta.addData("Mestres");
         call(alta);
         
         // LOGIN_USUARI
         Peticio login = new Peticio(Const.Peticio.LOGIN);
-        login.add("M13");
-        login.add("123");
+        login.addData("M13");
+        login.addData("123");
         RespostaPeticio r = call(login);
         
         // El login d'usuari hauria de ser correcte
@@ -92,8 +92,8 @@ public class GestorPeticionsTest {
         //GestorPeticions gestor = new GestorPeticions(new GestorSessions());
 
         Peticio login = new Peticio(Const.Peticio.LOGIN);
-        login.add("M13");
-        login.add("falsa");
+        login.addData("M13");
+        login.addData("falsa");
 
         RespostaPeticio r = call(login);
 
@@ -108,14 +108,14 @@ public class GestorPeticionsTest {
         //GestorPeticions gestor = new GestorPeticions(new GestorSessions());
         // AFEGIR_EMPRESA
         Peticio alta = new Peticio(Const.Peticio.EMPRESA_ADD);
-        alta.add("001");
-        alta.add("123");
+        alta.addData("001");
+        alta.addData("123");
         call(alta);
         
         // LOGIN_EMPRESA
         Peticio login = new Peticio(Const.Peticio.LOGIN);
-        login.add("001");
-        login.add("123");
+        login.addData("001");
+        login.addData("123");
         
         RespostaPeticio r = call(login);
         
@@ -134,8 +134,8 @@ public class GestorPeticionsTest {
         //GestorPeticions gestor = new GestorPeticions(new GestorSessions());
 
         Peticio login = new Peticio(Const.Peticio.LOGIN);
-        login.add("009");
-        login.add("xxx"); // contrasenya incorrecta
+        login.addData("009");
+        login.addData("xxx"); // contrasenya incorrecta
 
         //String jsonResp = gestor.processar(gson.toJson(login));
         RespostaPeticio resp = call(login); //gson.fromJson(jsonResp, RespostaPeticio.class);
@@ -150,23 +150,23 @@ public class GestorPeticionsTest {
     void logoutUsuariOk() {
         // ALTA_USUARI
         Peticio alta = new Peticio(Const.Peticio.USUARI_ADD);
-        alta.add("Marc09");
-        alta.add("xxx");
-        alta.add("Marc");
-        alta.add("Mestres");
+        alta.addData("Marc09");
+        alta.addData("xxx");
+        alta.addData("Marc");
+        alta.addData("Mestres");
         call(alta);
         
         // LOGIN_USUARI
         Peticio login = new Peticio(Const.Peticio.LOGIN);
-        login.add("Marc09");
-        login.add("xxx");
+        login.addData("Marc09");
+        login.addData("xxx");
         RespostaPeticio rLogin = call(login);
-        String token = (String)rLogin.get(0, String.class);
+        String token = (String)rLogin.getData(0, String.class);
         assertNotNull(token);
 
         // LOGOUT amb el token
         Peticio logout = new Peticio(Const.Peticio.LOGOUT);
-        logout.add(token);
+        logout.addData(token);
         RespostaPeticio rLogout = call(logout);
         
         //RespostaPeticio rLogout = gson.fromJson(gestor.processar(gson.toJson(logout)), RespostaPeticio.class);
@@ -181,21 +181,21 @@ public class GestorPeticionsTest {
     void logoutEmpresaOk() {
         // ALTA_EMPRESA
         Peticio alta = new Peticio(Const.Peticio.EMPRESA_ADD);
-        alta.add("001");
-        alta.add("123");
+        alta.addData("001");
+        alta.addData("123");
         call(alta);
 
         // LOGIN_EMPRESA
         Peticio login = new Peticio(Const.Peticio.LOGIN);
-        login.add("001");
-        login.add("123");
+        login.addData("001");
+        login.addData("123");
         RespostaPeticio rLogin = call(login);
-        String token = (String) rLogin.get(0, String.class);
+        String token = (String) rLogin.getData(0, String.class);
         assertNotNull(token);
 
         // LOGOUT amb el token
         Peticio logout = new Peticio(Const.Peticio.LOGOUT);
-        logout.add(token);
+        logout.addData(token);
         RespostaPeticio rLogout = call(logout); //gson.fromJson(gestor.processar(gson.toJson(logout)), RespostaPeticio.class);
 
         assertEquals(OK_RETURN_CODE, rLogout.getCodi(), "El logout hauria de ser correcte");
@@ -209,7 +209,7 @@ public class GestorPeticionsTest {
         //GestorPeticions gestor = new GestorPeticions(new GestorSessions());
 
         Peticio logout = new Peticio(Const.Peticio.LOGOUT);
-        logout.add("TOKEN_FAKE");
+        logout.addData("TOKEN_FAKE");
 
         RespostaPeticio r = call(logout); //gson.fromJson(gestor.processar(gson.toJson(logout)), RespostaPeticio.class);
 

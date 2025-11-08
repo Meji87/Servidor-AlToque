@@ -33,15 +33,13 @@ public class Principal {
     @Bean
     ApplicationRunner run(GestorUsuari gestorUsuari, GestorEmpresa gestorEmpresa){
         return args ->{
-            String ip = "localhost";
-            int port = 5050;
+            int port = Const.Servidor.PORT_DEFECTE;
 
             for (String a : args.getSourceArgs()) {
-                if (a.startsWith("--ip=")) ip = a.substring(5);
                 if (a.startsWith("--port=")) port = Integer.parseInt(a.substring(7));
             }
 
-            ServidorAlToque s = new ServidorAlToque(ip, port, peticions);
+            ServidorAlToque s = new ServidorAlToque(port, peticions);
             s.iniciar();
         };
         

@@ -28,7 +28,7 @@ public final class Const {
         public static final String PRODUCTE_ADD             = "PRODUCTE_ADD";
         public static final String PRODUCTE_DEL             = "PRODUCTE_DEL";
         public static final String PRODUCTE_LLISTAR         = "PRODUCTE_LLISTAR";
-        public static final String PRODUCTE_EMPRESA_LLISTAR = "PRODUCTE_EMPRESA_LLISTAR";
+        
         private Peticio() {}
     }
 
@@ -90,11 +90,16 @@ public final class Const {
         public static final String ERR_PRODUCTE_ADD         = "ERROR: No s'ha pogut afegir el producte";
         public static final String OK_PRODUCTE_LIST         = "OK: Llistat de productes";
         public static final String ERR_PRODUCTE_INEXISTENT  = "ERROR: El producte no existeix";
-        public static final String ERR_PRODUCTE_PREU_VALID  = "ERROR: El preu del producte no es valid";
+        public static final String ERR_PRODUCTE_PREU_INVALID= "ERROR: El preu del producte no es valid";
         
         private Missatge() {}
     }
-
+    // Config de sessió u otras constantes transversales (opcional)
+    public static final class Servidor {
+        public static final int PORT_DEFECTE = 5050;
+        private Servidor() {}
+    }
+    
     // Config de sessió u otras constantes transversales (opcional)
     public static final class Sessio {
         public static final int MINUTS_EXPIRACIO = 60;

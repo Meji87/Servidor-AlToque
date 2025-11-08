@@ -31,17 +31,19 @@ public class GestorServidor extends Thread{
     @Override
     public void run() {
         try {
+            System.out.println();
+            System.out.println("~~~~~~~~   Informació Servidor    ~~~~~~~~");
             // Obtenim els flux d'entrada del sòcol per rebre la petició del client
             BufferedReader input = new BufferedReader(
                     new InputStreamReader(socket.getInputStream()));
 
             String data = input.readLine();
-            
+            System.out.println("    - Peticio rebuda:   " + data); // ***************************************************************
             String responseText = gestorPeticions.processar(data); //GestorPeticions.processar(data);
             
             // Obtenim els flux de sortida del sòcol per respondre al client
             PrintWriter output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-        
+            System.out.println("    - Resposta enviada: " + responseText); // ***************************************************************
             output.println(responseText);
             
             // Tanquem tots els fluxos i el sòcol
@@ -49,11 +51,12 @@ public class GestorServidor extends Thread{
             output.close();
             socket.close();
             
-            System.out.println("Connexió amb el client tancada correctament");
+            System.out.println("   · Connexio amb el client tancada correctament ·");
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             
         } catch (IOException e) {
+            System.out.println("Error en rebre la petició: " + e.getMessage());
             e.printStackTrace();
-            System.out.println("Error en rebre la petició");
         }
     }
 }

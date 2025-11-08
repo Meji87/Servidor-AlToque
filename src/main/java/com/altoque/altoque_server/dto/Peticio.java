@@ -11,6 +11,7 @@ package com.altoque.altoque_server.dto;
  * Exemple de JSON:
  * {
  *   "peticio": "LOGIN_USUARI",
+ *   "token": "0087-3345"
  *   "data": ["M13","123"]
  * }
  */
@@ -19,7 +20,7 @@ public class Peticio extends DadesPeticio {
     private String token;
 
     /**
-     * Default constructor
+     * Constructor per defecte
      */
     public Peticio() {
         super();
@@ -28,7 +29,7 @@ public class Peticio extends DadesPeticio {
 
     /**
      * Crea una petició indicant el seu nom/tipus.
-     * @param peticio identificador de la petició (p. ex. "LOGIN_USUARI")
+     * @param peticio identificador de la petició (p. ex. "LOGIN")
      */
     public Peticio(String peticio) {
         super();
@@ -36,8 +37,10 @@ public class Peticio extends DadesPeticio {
     }
     
     /**
-     * Crea una petició indicant el seu nom/tipus.
-     * @param peticio identificador de la petició (p. ex. "LOGIN_USUARI")
+     * Crea una petició indicant el seu nom/tipus i un token associat a una Sessió.
+     * @param peticio identificador de la petició (p. ex. "LOGOUT")
+     * @param token token vinculat a una Sessio
+     * 
      */
     public Peticio(String peticio, String token) {
         super();
@@ -56,9 +59,9 @@ public class Peticio extends DadesPeticio {
         return token;
     }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+//    public void setToken(String token) {
+//        this.token = token;
+//    }
     
     
 }

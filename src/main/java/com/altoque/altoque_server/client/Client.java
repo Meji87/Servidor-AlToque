@@ -149,10 +149,10 @@ public class Client {
         String pwd       = askStr("Contrasenya: ", true);
 
         Peticio p = new Peticio(Const.Peticio.USUARI_ADD);
-        p.add(nomUsuari);
-        p.add(pwd);
-        p.add(nom);
-        p.add(cognoms);
+        p.addData(nomUsuari);
+        p.addData(pwd);
+        p.addData(nom);
+        p.addData(cognoms);
 
         printResposta(send(p));
     }
@@ -165,9 +165,9 @@ public class Client {
         String pwd = askStr("Contrasenya: ", true);
 
         Peticio p = new Peticio(Const.Peticio.EMPRESA_ADD);
-        p.add(cif);
+        p.addData(cif);
         //p.addDataObject(nom);
-        p.add(pwd);
+        p.addData(pwd);
 
         printResposta(send(p));
     }
@@ -179,16 +179,16 @@ public class Client {
         String pwd = askStr("Contrasenya: ", true);
 
         Peticio p = new Peticio(Const.Peticio.LOGIN);
-        p.add(usu);
-        p.add(pwd);
+        p.addData(usu);
+        p.addData(pwd);
 
         RespostaPeticio r = send(p);
         if (!printResposta(r)) return;
 
         // Esperem: [token, rol, nomVisible?]
-        this.token = (String)r.get(0, String.class);
-        this.rol   = Rol.valueOf( r.get(1, String.class));
-        this.nomUsuari = (r.sizeData() >= 3) ? (String) r.get(2, String.class) : usu;
+        this.token = (String)r.getData(0, String.class);
+        this.rol   = Rol.valueOf( r.getData(1, String.class));
+        this.nomUsuari = (r.sizeData() >= 3) ? (String) r.getData(2, String.class) : usu;
 
         System.out.printf("Sessió iniciada com a %s%n", rol.name());
     }
@@ -248,9 +248,9 @@ public class Client {
 
         Peticio p = new Peticio(Const.Peticio.PRODUCTE_ADD, token);
         //p.addDataObject(token);
-        p.add(nom);
-        p.add(descripcio);
-        p.add(preu);
+        p.addData(nom);
+        p.addData(descripcio);
+        p.addData(preu);
 
         printResposta(send(p));
     }
@@ -262,7 +262,7 @@ public class Client {
 
         Peticio p = new Peticio(Const.Peticio.PRODUCTE_DEL, token);
         //p.addDataObject(token);
-        p.add(id);
+        p.addData(id);
 
         printResposta(send(p));
     }
@@ -283,7 +283,7 @@ public class Client {
         ensureSessioEmpresa();
         Peticio p = new Peticio(Const.Peticio.PRODUCTE_LLISTAR, token);
         // El servidor espera un CIF opcional, no el token:
-        p.add(nomUsuari); // nomUsuari en sesión de EMPRESA es el CIF visible
+        p.addData(nomUsuari); // nomUsuari en sesión de EMPRESA es el CIF visible
         RespostaPeticio r = send(p);
         if (!printResposta(r)) return;
         printProductes(r);
@@ -345,7 +345,7 @@ public class Client {
 //    }
     
     private void printProductes(RespostaPeticio r) {
-        ProducteDto[] arr = r.get(0, ProducteDto[].class);  
+        ProducteDto[] arr = r.getData(0, ProducteDto[].class);  
         if (arr == null || arr.length == 0) { System.out.println("(sense productes)"); return; }
         System.out.println("— Productes —");
         for (ProducteDto p : arr) {
@@ -355,7 +355,7 @@ public class Client {
     }
 
     private void printEmpreses(RespostaPeticio r) {
-        Empresa[] arr = r.get(0, Empresa[].class);
+        Empresa[] arr = r.getData(0, Empresa[].class);
         if (arr == null || arr.length == 0) { System.out.println("(sense empreses)"); return; }
         System.out.println("— Empreses —");
         for (Empresa e : arr) {
