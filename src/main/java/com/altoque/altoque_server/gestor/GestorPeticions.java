@@ -93,6 +93,9 @@ public class GestorPeticions {
 
             case Const.Peticio.PRODUCTE_ADD:
                 return afegirProducte(p);
+                
+            case Const.Peticio.PRODUCTE_DEL:
+                return eliminarProducte(p);
 
             case Const.Peticio.PRODUCTE_LLISTAR:
                 return llistarProductes(p);
@@ -129,10 +132,6 @@ public class GestorPeticions {
         requereixPeticioNoNull(p);
         requereixData(p);
         requereixMinParams(p, 2);
-        
-//        if (p == null) throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT);
-//        if (p.esDataBuit()) throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
-//        if (p.sizeData() < 2) throw new GestorException(Const.Missatge.ERR_PARAMETRE_INEXISTENT); 
 
         String identificador = (String)p.getData(0, String.class); 
         String contrasenya   = (String)p.getData(1, String.class);
@@ -145,7 +144,7 @@ public class GestorPeticions {
                                                     Const.Missatge.OK_LOGIN_USUARI);
             r.addData(s.token);
             r.addData(Rol.USUARI.name());  
-            r.addData(u.getNom());        
+            //r.addData(u.getNom());        
             return r;
         }
 
@@ -157,7 +156,7 @@ public class GestorPeticions {
                                                     Const.Missatge.OK_LOGIN_EMPRESA);
             r.addData(s.token);
             r.addData(Rol.EMPRESA.name());         
-            r.addData(e.getCif());        
+            //r.addData(e.getCif());        
             return r;
         }
 
@@ -171,9 +170,6 @@ public class GestorPeticions {
         requereixPeticioNoNull(p);
         requereixSessioValida(p.getToken());
         
-//        if (p == null) throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT);
-//        if (!sessions.esValida(p.getToken())) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
-        
         sessions.tancarSessio(p.getToken());
         
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_SESSIO_TANCADA);
@@ -185,11 +181,6 @@ public class GestorPeticions {
         requereixData(p);
         requereixMinParams(p, 4);
         //requereixSessioValida(p.getToken());
-        
-//        if (p == null) throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT);
-//        if (p.esDataBuit()) throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
-//        if (p.sizeData() < 4) throw new GestorException(Const.Missatge.ERR_PARAMETRE_INEXISTENT); 
-//        //if (!sessions.esValida(p.getToken())) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
         
         String nomusuari = (String)p.getData(0, String.class);
         String contrasenya = (String)p.getData(1, String.class);
@@ -215,9 +206,6 @@ public class GestorPeticions {
         requereixPeticioNoNull(p);
         requereixSessioValida(p.getToken());
         
-//        if (p == null) throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT);
-//        if (!sessions.esValida(p.getToken())) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
-        
         Sessio s = sessions.buscarSessio(p.getToken());
         
         // Comprobar que l'usuari existeix
@@ -235,15 +223,12 @@ public class GestorPeticions {
         // Validar dades
         requereixPeticioNoNull(p);
         requereixData(p);
-        requereixMinParams(p, 2);
+        requereixMinParams(p, 3);
         //requereixSessioValida(p.getToken());
-        
-//        if (p == null) throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT);
-//        if (p.esDataBuit()) throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
-//        if (p.sizeData() < 2) throw new GestorException(Const.Missatge.ERR_PARAMETRE_INEXISTENT);
         
         String cif = (String)p.getData(0, String.class);
         String contrasenya = (String)p.getData(1, String.class);
+        String nom = (String)p.getData(2, String.class);
 
         if (empreses.buscarPerCif(cif) != null) {
             throw new GestorException(Const.Missatge.ERR_EMPRESA_EXISTENT);
@@ -252,6 +237,7 @@ public class GestorPeticions {
         Empresa e = new Empresa();
         e.setCif(cif);
         e.setContrasenya(contrasenya);
+        e.setNom(nom);
         empreses.inserir(e);
 
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_EMPRESA_ADD);
@@ -262,12 +248,9 @@ public class GestorPeticions {
         requereixPeticioNoNull(p);
         requereixSessioValida(p.getToken());
         
-//        if (p == null) throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT);
-//        if (!sessions.esValida(p.getToken())) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
-        
         Sessio s = sessions.buscarSessio(p.getToken());
         
-        // Comprobar que l'usuari existeix
+        // Comprobar que l'empresa existeix
         Empresa empresaExisteix = empreses.buscarPerCif(s.nomUsuari);
         if (empresaExisteix == null)throw new GestorException(Const.Missatge.ERR_EMPRESA_INEXISTENT);
         
@@ -281,9 +264,6 @@ public class GestorPeticions {
         // Validar dades
         requereixPeticioNoNull(p);
         requereixSessioValida(p.getToken());
-        
-//        if (p == null) throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT);
-//        if (!sessions.esValida(p.getToken())) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
         
         List<Empresa> llista = empreses.llistar();
         
@@ -309,11 +289,6 @@ public class GestorPeticions {
         requereixMinParams(p, 3);
         requereixSessioValida(p.getToken());
         
-//        if (p == null) throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT);
-//        if (p.esDataBuit()) throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
-//        if (p.sizeData() < 3) throw new GestorException(Const.Missatge.ERR_PARAMETRE_INEXISTENT); 
-//        if (!sessions.esValida(p.getToken())) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
-        
         String nom = (String)p.getData(0, String.class);
         String desc = (String)p.getData(1, String.class);
         String preu = (String)p.getData(2, String.class);
@@ -324,10 +299,11 @@ public class GestorPeticions {
         if (e == null) throw new GestorException(Const.Missatge.ERR_EMPRESA_INEXISTENT);
         
         // Validar i convertir preu
-        long preuNum;
+        double preuDbl;
         try{
-            preuNum = Long.parseLong(preu);
+            preuDbl = Double.parseDouble(preu);
         }catch(NumberFormatException ex){
+            
             throw new GestorException(Const.Missatge.ERR_PRODUCTE_PREU_INVALID + " | " + ex.getMessage(), ex);
         }
         
@@ -335,7 +311,7 @@ public class GestorPeticions {
         Producte pr = new Producte();
         pr.setNom(nom);
         pr.setDescripcio(desc);
-        pr.setPreu(preuNum); 
+        pr.setPreu(preuDbl); 
         //e.afegirProducte(pr);
         pr.setEmpresa(e);
         Producte guardat = productes.inserir(pr);
@@ -343,14 +319,34 @@ public class GestorPeticions {
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_PRODUCTE_ADD + " | " + guardat.getId());
     }
     
+    private RespostaPeticio eliminarProducte(Peticio p) throws GestorException{
+        requereixPeticioNoNull(p);
+        requereixData(p);
+        requereixMinParams(p, 1);
+        requereixSessioValida(p.getToken());
+        
+        String idProducte = (String)p.getData(0, String.class);
+        
+        long idRebut;
+        try{
+            idRebut = Long.parseLong(idProducte);
+        }catch(NumberFormatException ex){
+            throw new GestorException(Const.Missatge.ERR_PRODUCTE_NO_TROBAT_PER_NOM + " | " + ex.getMessage(), ex);
+        }
+        
+        // Comprobar que el producte existeix
+        Producte producteExisteix = productes.buscarPerId(idRebut);
+        if (producteExisteix == null)throw new GestorException(Const.Missatge.ERR_PRODUCTE_INEXISTENT);
+        
+        productes.eliminar(producteExisteix.getId());
+        
+        return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_PRODUCTE_DEL);
+    }
 
     private RespostaPeticio llistarProductes(Peticio p) throws GestorException {
         // Validar dades
         requereixPeticioNoNull(p);
         requereixSessioValida(p.getToken());
-        
-//        if (p == null) throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT);
-//        if (!sessions.esValida(p.getToken())) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
         
         // data opcional: [cif]
         List<Producte> llista;

@@ -65,19 +65,19 @@ public class Client {
     // ============================
     private boolean menuPrincipal() {
         System.out.println();
-        System.out.println("***** Menú principal *****");
+        System.out.println("***** Menu principal *****");
         System.out.println(" [1] Alta USUARI");
         System.out.println(" [2] Alta EMPRESA");
         System.out.println(" [3] Login");
         System.out.println(" [0] Sortir");
 
-        int op = askInt("Opció: ", -1);
+        int op = askInt("Opcio: ", -1);
         switch (op) {
             case 1 -> actionAltaUsuari();
             case 2 -> actionAltaEmpresa();
             case 3 -> actionLogin();
             case 0 -> { return false; }
-            default -> System.out.println("Opció no vàlida.");
+            default -> System.out.println("Opcio no valida.");
         }
         return true;
     }
@@ -87,21 +87,21 @@ public class Client {
     // ============================
     private boolean menuUsuari() {
         headerSessio();
-        System.out.println("***** Menú USUARI *****");
+        System.out.println("***** Menu USUARI *****");
         System.out.println(" [1] Whoami / Veure token");
         System.out.println(" [2] Eliminar el meu USUARI");
         System.out.println(" [3] Veure empreses");
         System.out.println(" [9] Logout");
         System.out.println(" [0] Sortir");
 
-        int op = askInt("Opció: ", -1);
+        int op = askInt("Opcio: ", -1);
         switch (op) {
             case 1 -> actionWhoAmI();
             case 2 -> actionEliminarPropiCompte(); // esborra usuari + sessió
             case 3 -> actionEmpresaLlistar();
             case 9 -> actionLogout();
             case 0 -> { return false; }
-            default -> System.out.println("Opció no vàlida.");
+            default -> System.out.println("Opcio no valida.");
         }
         return true;
     }
@@ -111,7 +111,7 @@ public class Client {
     // ============================
     private boolean menuEmpresa() {
         headerSessio();
-        System.out.println("***** Menú EMPRESA *****");
+        System.out.println("***** Menu EMPRESA *****");
         System.out.println(" [1] Whoami / Veure token");
         System.out.println(" [2] Eliminar la meva EMPRESA");
         System.out.println(" [3] Afegir producte");
@@ -121,7 +121,7 @@ public class Client {
         System.out.println(" [9] Logout");
         System.out.println(" [0] Sortir");
 
-        int op = askInt("Opció: ", -1);
+        int op = askInt("Opcio: ", -1);
         switch (op) {
             case 1 -> actionWhoAmI();
             case 2 -> actionEliminarPropiCompte(); // esborra empresa + sessió
@@ -131,7 +131,7 @@ public class Client {
             case 6 -> actionProducteLlistarEmpresa();
             case 9 -> actionLogout();
             case 0 -> { return false; }
-            default -> System.out.println("Opció no vàlida.");
+            default -> System.out.println("Opcio no valida.");
         }
         return true;
     }
@@ -161,13 +161,13 @@ public class Client {
     private void actionAltaEmpresa() {
         System.out.println("\n***** Alta EMPRESA *****");
         String cif = askStr("CIF: ", true);
-        //String nom = askStr("Nom empresa: ", true);
+        String nom = askStr("Nom empresa: ", true);
         String pwd = askStr("Contrasenya: ", true);
 
         Peticio p = new Peticio(Const.Peticio.EMPRESA_ADD);
         p.addData(cif);
-        //p.addDataObject(nom);
         p.addData(pwd);
+        p.addData(nom);
 
         printResposta(send(p));
     }
@@ -190,12 +190,12 @@ public class Client {
         this.rol   = Rol.valueOf( r.getData(1, String.class));
         this.nomUsuari = (r.sizeData() >= 3) ? (String) r.getData(2, String.class) : usu;
 
-        System.out.printf("Sessió iniciada com a %s%n", rol.name());
+        System.out.printf("Sessio iniciada com a %s%n", rol.name());
     }
 
     // Logout
     private void actionLogout() {
-        if (token == null) { System.out.println("No hi ha sessió."); return; }
+        if (token == null) { System.out.println("No hi ha sessio."); return; }
 
         Peticio p = new Peticio(Const.Peticio.LOGOUT, token);
         //p.addDataObject(token);
@@ -207,8 +207,8 @@ public class Client {
 
     // Whoami (mostrar dades locals)
     private void actionWhoAmI() {
-        if (token == null) { System.out.println("No hi ha sessió."); return; }
-        System.out.println("\n— Sessió —");
+        if (token == null) { System.out.println("No hi ha sessio."); return; }
+        System.out.println("\n— Sessio —");
         System.out.println(" Usuari visible: " + nomUsuari);
         System.out.println(" Rol: " + rol);
         System.out.println(" Token: " + token);
@@ -244,7 +244,8 @@ public class Client {
         System.out.println("\n***** Afegir producte *****");
         String nom  = askStr("Nom del producte: ", true);
         String descripcio = askStr("Descripcio: ", true);
-        String preu = askStr("Preu: ", true);
+        //Double pre = askDouble("Preu: ", 0.0);
+        String preu = askStrDouble("Preu: ", "0");
 
         Peticio p = new Peticio(Const.Peticio.PRODUCTE_ADD, token);
         //p.addDataObject(token);
@@ -304,7 +305,7 @@ public class Client {
     // ==========
 
     private void headerSessio() {
-        System.out.printf("%nSessió: %s (%s)%n", nomUsuari, rol);
+        System.out.printf("%nSessio: %s (%s)%n", nomUsuari, rol);
     }
 
     private boolean printResposta(RespostaPeticio r) {
@@ -312,44 +313,13 @@ public class Client {
         System.out.printf("%s (codi=%d)%n", r.getMissatge(), r.getCodi());
         return r.getCodi() == Const.Resposta.OK_RETURN_CODE;
     }
-
-//    private void printLlista(RespostaPeticio r) {
-//        int n = r.sizeData();
-//        if (n == 0) { System.out.println("(sense dades)"); return; }
-//        System.out.println("— Dades —");
-//        for (int i = 0; i < n; i++) {
-//            System.out.println("num dades: " + n);
-//            // Si el servidor envia objectes, canvia String.class pel teu tipus
-//            String item = (String) r.get(i, String.class);
-//            System.out.println(" · " + item);
-//        }
-//    }
-    
-//    private void printLlista(RespostaPeticio r) {
-//        if (r.sizeData() == 0) { System.out.println("(sense dades)"); return; }
-//        
-//        Usuari [] users={};
-//        users = ( Usuari[]) r.get(0, users.getClass());
-//
-//        Type listType = new TypeToken<java.util.List<ProducteDto>>() {}.getType();
-//        java.util.List<ProducteDto> llista = r.get(0, listType);
-//
-//        if (llista == null || llista.isEmpty()) { System.out.println("(sense productes)"); return; }
-//
-//        System.out.println("— Productes —");
-//        for (ProducteDto pr : llista) {
-//            System.out.printf(" · [%d] %s — %d €%s%n",
-//                    pr.id, pr.nom, pr.preu,
-//                    pr.empresaCif != null ? (" (" + pr.empresaCif + ")") : "");
-//        }
-//    }
     
     private void printProductes(RespostaPeticio r) {
         ProducteDto[] arr = r.getData(0, ProducteDto[].class);  
         if (arr == null || arr.length == 0) { System.out.println("(sense productes)"); return; }
-        System.out.println("— Productes —");
+        System.out.println("___ Productes ___");
         for (ProducteDto p : arr) {
-            System.out.printf(" · [%s] %s — %d €%n", p.id, p.nom, p.preu ,
+            System.out.printf("  [%s] %s  --  %.2f €%n", p.id, p.nom, p.preu ,
                     p.empresaCif != null ? "(" + p.empresaCif + ")" : "");
         }
     }
@@ -357,16 +327,16 @@ public class Client {
     private void printEmpreses(RespostaPeticio r) {
         Empresa[] arr = r.getData(0, Empresa[].class);
         if (arr == null || arr.length == 0) { System.out.println("(sense empreses)"); return; }
-        System.out.println("— Empreses —");
+        System.out.println("___ Empreses ___");
         for (Empresa e : arr) {
-            System.out.printf(" · %s%n", e.getCif());
+            System.out.printf("   %s  --  %s%n", e.getCif(), e.getNom());
         }
     }
 
 
     private void ensureSessioEmpresa() {
         if (token == null || rol != Rol.EMPRESA) {
-            throw new IllegalStateException("Cal sessió d'EMPRESA per aquesta acció.");
+            throw new IllegalStateException("Cal sessio d'EMPRESA per aquesta acció.");
         }
     }
 
@@ -386,7 +356,7 @@ public class Client {
 
             return gson.fromJson(respostaJson, RespostaPeticio.class);
         } catch (IOException e) {
-            System.out.println("Error de connexió: " + e.getMessage());
+            System.out.println("Error de connexio: " + e.getMessage());
             return null;
         }
     }
@@ -409,17 +379,19 @@ public class Client {
             String s = in.nextLine();
             if (s == null || s.isBlank()) return defaultVal;
             try { return Integer.parseInt(s.trim()); }
-            catch (NumberFormatException e) { System.out.println("Introdueix un número."); }
+            catch (NumberFormatException e) { System.out.println("Introdueix un numero."); }
         }
     }
 
-    private double askDouble(String prompt, double defaultVal) {
+    private String askStrDouble(String prompt, String defaultVal) {
         while (true) {
             System.out.print(prompt);
             String s = in.nextLine();
             if (s == null || s.isBlank()) return defaultVal;
-            try { return Double.parseDouble(s.trim()); }
-            catch (NumberFormatException e) { System.out.println("Introdueix un número (ex: 1.25)."); }
+            try { 
+                Double d = Double.parseDouble(s.trim());
+                return d.toString(); }
+            catch (NumberFormatException e) { System.out.println("Introdueix un numero (ex: 1.25)."); }
         }
     }
 

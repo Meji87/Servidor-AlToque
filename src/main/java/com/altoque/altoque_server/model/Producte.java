@@ -29,7 +29,7 @@ public class Producte {
     private String descripcio;
     
     @Column(nullable = false)
-    private long preu;
+    private double preu;
     
     @ManyToOne(fetch = FetchType.LAZY, optional=false)
     @JoinColumn(name = "empresa_cif", nullable=false) // Usa el @Id de Empresa (cif)
@@ -38,7 +38,7 @@ public class Producte {
     // Requerid per JPA
     public Producte() {}
     
-    public Producte(String nom, String descripcio, long preu, Empresa empresa) {
+    public Producte(String nom, String descripcio, double preu, Empresa empresa) {
         this.nom = nom;
         this.descripcio = descripcio;
         this.preu = preu;
@@ -70,11 +70,11 @@ public class Producte {
         this.descripcio = descripcio;
     }
 
-    public long getPreu() {
+    public double getPreu() {
         return preu;
     }
 
-    public void setPreu(long preu) {
+    public void setPreu(double preu) {
         this.preu = preu;
     }
 

@@ -21,6 +21,10 @@ public class GestorProducte {
         return producteDao.buscarPerNom(nom);
     }
     
+    public Producte buscarPerId(long id){
+        return producteDao.buscarPerId(id);
+    }
+    
     /**
      * Insereix un nou usuari a la base de dades
      *

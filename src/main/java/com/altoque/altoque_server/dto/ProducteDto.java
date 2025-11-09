@@ -8,12 +8,12 @@ public class ProducteDto {
     public Long id;
     public String nom;
     public String descripcio;
-    public Long preu;
+    public double preu;
     public String empresaCif;
 
     public ProducteDto() {}
 
-    public ProducteDto(Long id, String nom, String descripcio, Long preu, String empresaCif) {
+    public ProducteDto(Long id, String nom, String descripcio, Double preu, String empresaCif) {
         this.id = id;
         this.nom = nom;
         this.descripcio = descripcio;

@@ -88,8 +88,10 @@ public final class Const {
         
         public static final String OK_PRODUCTE_ADD          = "OK: Producte afegit correctament";
         public static final String ERR_PRODUCTE_ADD         = "ERROR: No s'ha pogut afegir el producte";
+        public static final String OK_PRODUCTE_DEL          = "OK: Producte eliminat correctament";
         public static final String OK_PRODUCTE_LIST         = "OK: Llistat de productes";
         public static final String ERR_PRODUCTE_INEXISTENT  = "ERROR: El producte no existeix";
+        public static final String ERR_PRODUCTE_NO_TROBAT_PER_NOM = "ERROR: No s'ha trobat cap producte amb aquest NOM";
         public static final String ERR_PRODUCTE_PREU_INVALID= "ERROR: El preu del producte no es valid";
         
         private Missatge() {}
