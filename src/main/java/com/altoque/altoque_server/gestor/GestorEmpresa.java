@@ -41,6 +41,10 @@ public class GestorEmpresa {
         empresaDao.eliminarEmpresa(cif);
     }
         
+    /**
+     * Llista les empreses de la BBDD
+     * @return llistat d'empreses 
+     */
     public List<Empresa> llistar(){
         return empresaDao.llistarEmpreses();
     }

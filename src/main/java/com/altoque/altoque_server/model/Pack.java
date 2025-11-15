@@ -25,11 +25,11 @@ public class Pack {
     private String nom;
     
     @Column(nullable=false) 
-    private long preu;     // céntimos
+    private long preu;    
     @ManyToOne(optional=false) 
     @JoinColumn(name="empresa_cif")
     private Empresa empresa;
-    // visibilidad, descripción, etc.
+    
 }
 
 

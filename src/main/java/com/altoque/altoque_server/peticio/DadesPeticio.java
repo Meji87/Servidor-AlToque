@@ -1,5 +1,5 @@
 
-package com.altoque.altoque_server.dto;
+package com.altoque.altoque_server.peticio;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;

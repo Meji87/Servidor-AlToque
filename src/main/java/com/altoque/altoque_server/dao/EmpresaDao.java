@@ -17,10 +17,19 @@ public class EmpresaDao {
     @Autowired
     private EmpresaRepositori empresaRepo;
     
+    /**
+     * Llista de totes les empreses registrades a la BBDD
+     * @return 
+     */
     public List<Empresa> llistarEmpreses(){
         return empresaRepo.findAll();
     }
     
+    /**
+     * Busca una empresa a partir del seu identificador
+     * @param cif identificador de l'empresa a buscar
+     * @return Empresa trobada, en cas contrari null
+     */
     public Empresa buscarPerCif(String cif){
         return empresaRepo.findByCif(cif);
     }

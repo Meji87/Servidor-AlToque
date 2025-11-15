@@ -17,10 +17,22 @@ public class GestorProducte {
     @Autowired
     private ProducteDao producteDao;
     
+    /**
+     * Busca un producte pel seu nom
+     * 
+     * @param nom del producte a buscar
+     * @return Producte trobat, en cas contrari null
+     */
     public Producte buscarPerNom(String nom){
         return producteDao.buscarPerNom(nom);
     }
     
+     /**
+     * Busca un producte pel seu identificador
+     * 
+     * @param id del producte a buscar
+     * @return Producte trobat, en cas contrari null
+     */   
     public Producte buscarPerId(long id){
         return producteDao.buscarPerId(id);
     }
@@ -44,12 +56,23 @@ public class GestorProducte {
     public void eliminar(Long idProducte) throws GestorException {
         producteDao.eliminar(idProducte);
     }
-        
+     
+    /**
+     * Llista tots els productes de la BBDD
+     * @return llista de Productes
+     */
     public List<Producte> llistar(){
         return producteDao.llistar();
     }
     
+     /**
+      * Llista els productes d'una empresa 
+      * 
+      * @param cif identificador de l'empresa amb els productes a buscar
+      * @return llista de Productes d'una empresa
+      */ 
     public List<Producte> llistarPerEmpresa(String cif){
         return producteDao.llistarPerEmpresa(cif);
     }
+         
 }

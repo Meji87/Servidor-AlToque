@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
@@ -31,6 +32,7 @@ public class Principal {
     }
     
     @Bean
+    @Profile("!test")   // NOMES es crea si el perfil NO es "test"
     ApplicationRunner run(GestorUsuari gestorUsuari, GestorEmpresa gestorEmpresa){
         return args ->{
             int port = Const.Servidor.PORT_DEFECTE;

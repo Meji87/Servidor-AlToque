@@ -44,7 +44,7 @@ public class GestorSessionsTest {
         GestorSessions s = new GestorSessions();
         Sessio sessio = s.iniciarSessio("Meji87", Const.Rol.USUARI);
         String token = sessio.getToken();
-        assertEquals(token, s.buscarSessio(sessio.getToken()), "Hauria de trobar el token per l'usuari");
+        assertEquals(token, s.buscarTokenDeUsuari(sessio.getNomUsuari()), "Hauria de trobar el token per l'usuari");
     }
     
     /**
@@ -67,4 +67,30 @@ public class GestorSessionsTest {
         GestorSessions s = new GestorSessions();
         assertNull(s.buscarSessio("inexistent"), "Un usuari sense sessió no ha de tenir token");
     }
+    
+    /**
+     * Comprova que existeixi una Sessio en memoria amb un token vàlid.
+     */
+    @Test
+    void buscarSessio_tokenOk() {
+        GestorSessions gestor = new GestorSessions();
+        Sessio creada = gestor.iniciarSessio("Meji87", Const.Rol.USUARI);
+
+        Sessio trobada = gestor.buscarSessio(creada.getToken());
+
+        assertSame(creada, trobada);
+    }
+
+    /**
+     * Comprova que una Sessio no existeixi en memoria amb un token no vàlid.
+     */
+    @Test
+    void buscarSessio_tokenKo() {
+        GestorSessions gestor = new GestorSessions();
+
+        Sessio trobada = gestor.buscarSessio("token-inexistent");
+
+        assertNull(trobada);
+    }
+
 }

@@ -2,7 +2,6 @@ package com.altoque.altoque_server.servidor;
 
 import com.altoque.altoque_server.gestor.GestorPeticions;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 

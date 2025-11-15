@@ -1,4 +1,4 @@
-package com.altoque.altoque_server.dto;
+package com.altoque.altoque_server.peticio;
 
 /**
  * Resposta del servidor a una petició.
@@ -77,7 +77,5 @@ public class RespostaPeticio extends DadesPeticio{
     public void setMissatge(String missatge) {
         this.missatge = missatge;
     }
-
-
     
 }

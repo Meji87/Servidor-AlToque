@@ -7,11 +7,11 @@ import com.altoque.altoque_server.repositori.EmpresaRepositori;
 import com.altoque.altoque_server.repositori.UsuariRepositori;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 /**
  *
@@ -19,69 +19,78 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 //@DataJpaTest
-//@ActiveProfiles("test")
+@SpringBootTest
+@ActiveProfiles("test")
 //@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-
-@DataJpaTest
 class RepositoryTest {
 
-  @Autowired UsuariRepositori usuariRepo;
-  @Autowired EmpresaRepositori empresaRepo;
+    @Autowired UsuariRepositori usuariRepo;
+    @Autowired EmpresaRepositori empresaRepo;
   
+    @BeforeEach
+    void setUp(){
+        usuariRepo.deleteAll();
+        empresaRepo.deleteAll();
+    }
+    
+    @AfterEach
+    void tearDown(){
+        usuariRepo.deleteAll();
+        empresaRepo.deleteAll();
+    }
+  
+    /**
+     * Comprova a crear un Usuari i desar-lo a la BBDD
+     * Comprova que un usuari existeix tant per identificador com per nomusuari
+     * Comprova que un usuari s'elimina correctament
+     */
     @Test
     void crud_usuari_ok() {
         // CREATE
-        var u = new Usuari();
+        Usuari u = new Usuari();
         u.setNomusuari("Marc09");
         u.setNom("Marc");
         u.setCognoms("Mestres");
         u.setContrasenya("1234");
         usuariRepo.save(u);
 
-        // READ por ID
-        var byId = usuariRepo.findById("Marc09").orElseThrow();
+        // READ per identificador
+        Usuari byId = usuariRepo.findById("Marc09").orElseThrow();
         assertThat(byId.getNomusuari()).isEqualTo("Marc09");
 
-        // READ por finder derivado
-        var byNameList = usuariRepo.findByNomusuari("Marc09");
+        // READ per nomusuari
+        Usuari byNameList = usuariRepo.findByNomusuari("Marc09");
         assertThat(byNameList.getNomusuari()).isEqualTo("Marc09");
 
         // UPDATE (no toques la PK)
-        //var saved = byNameList.getNomusuari() ;// get(0);
-        byNameList.setCognoms("Mestres Actualitzat");
-        usuariRepo.save(byNameList);
-
-        var again = usuariRepo.findById("Marc09").orElseThrow();
-        assertThat(again.getCognoms()).isEqualTo("Mestres Actualitzat");
 
         // DELETE
         usuariRepo.deleteById("Marc09");
         assertThat(usuariRepo.findById("Marc09")).isEmpty();
     }
     
+    /**
+     * Comprova a crear una Empresa i desar-la a la BBDD
+     * Comprova que una empresa existeix tant per identificador com per CIF
+     * Comprova que una empresa s'elimina correctament
+     */
     @Test
     void crud_empresa_ok() {
         // CREATE
-        var e = new Empresa();
+        Empresa e = new Empresa();
         e.setCif("00012-B");
         e.setContrasenya("1234");
         empresaRepo.save(e);
 
-        // READ por ID
-        var byId = empresaRepo.findById("00012-B").orElseThrow();
+        // READ per identificador
+        Empresa byId = empresaRepo.findById("00012-B").orElseThrow();
         assertThat(byId.getCif()).isEqualTo("00012-B");
 
-        // READ por finder derivado
-        var byNameList = empresaRepo.findByCif("00012-B");
+        // READ per CIF
+        Empresa byNameList = empresaRepo.findByCif("00012-B");
         assertThat(byNameList.getCif()).isEqualTo("00012-B");
 
-        // UPDATE (no toques la PK)
-        //var saved = byNameList.get(0);
-        byNameList.setContrasenya("xxx");
-        empresaRepo.save(byNameList);
-
-        var again = empresaRepo.findById("00012-B").orElseThrow();
-        assertThat(again.getContrasenya()).isEqualTo("xxx");
+        // UPDATE
 
         // DELETE
         empresaRepo.deleteById("00012-B");

@@ -66,5 +66,26 @@ public class GestorSessions {
         sessions.remove(token);
     }
     
+    /**
+     * Busca el token d'un usuari o empresa a partir del seu identificador
+     * @param identificador de l'usuari o empresa a buscar
+     * @return token de la sessió de l'usuari o empresa.
+     */
+    public String buscarTokenDeUsuari (String identificador){
+        if (identificador == null) {
+            return null;
+        }
+
+        // Recorrem totes les sessions en memòria
+        for (Sessio sessio : sessions.values()) {
+            // Suposant que Sessio té getUsuari() i getToken()
+            if (identificador.equals(sessio.getNomUsuari())) {
+                return sessio.getToken();
+            }
+        }
+
+        // Si cap sessió té aquest usuari, retornem null
+        return null;
+    }
 }
 

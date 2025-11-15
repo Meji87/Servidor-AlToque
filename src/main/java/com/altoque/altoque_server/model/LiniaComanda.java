@@ -28,5 +28,5 @@ public class LiniaComanda {
     Integer quantitat;
     
     @Column(nullable=false) 
-    long preuUnitari; // “precio congelado”
+    long preuUnitari; 
 }

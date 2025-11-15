@@ -1,10 +1,8 @@
 
-package com.altoque.altoque_server.dto;
+package com.altoque.altoque_server.peticio;
 
 /**
  * Representa una petició completa enviada/desada com a JSON.
- * Inclou el nom/tipus de la petició (camp {@code peticio}) i,
- * a través de la superclasse {@link DadesPeticio}, la llista de dades.
  *
  * @author marc mestres
  * 
@@ -49,12 +47,17 @@ public class Peticio extends DadesPeticio {
     }
 
     /**
+     * Obté el paràmetre peticio de la petició
      * @return el nom/tipus de la petició (p. ex. "LOGIN_USUARI")
      */
     public String getPeticio() {
         return peticio;
     }
 
+    /**
+     * Obté el paràmetre token de la peticio
+     * @return 
+     */
     public String getToken() {
         return token;
     }

@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Classe que representa una empresa
+ * 
  * @author marc mestres
  */
 @Entity
@@ -82,28 +83,56 @@ public class Empresa {
         this.contrasenya = contrasenya;
     }
 
+    /**
+     * Retorna el valor nom
+     * 
+     * @return valor nom
+     */
     public String getNom() {
         return nom;
     }
 
+    /**
+     * Estableix el valor nom
+     * 
+     * @param nom nou valor nom
+     */
     public void setNom(String nom) {
         this.nom = nom;
     }
 
-    
+    /**
+     * Retorna una llista de Productes
+     * 
+     * @return llista de Productes
+     */
     public List<Producte> getProductes() {
         return productes;
     }
 
+    /**
+     * Estableix una llista de Productes
+     * 
+     * @param productes llista dels nous productes
+     */
     public void setProductes(List<Producte> productes) {
         this.productes = productes;
     }
     
+    /**
+     * Afegeix un producte a l'Empresa
+     * 
+     * @param p producte a afegir
+     */
     public void afegirProducte(Producte p) {
-    productes.add(p);
-    p.setEmpresa(this);
-}
+        productes.add(p);
+        p.setEmpresa(this);
+    }
 
+    /**
+     * Elimina un producte de l'empresa
+     * @param p producre a eliminar
+     */
     public void eliminarProducte(Producte p) {
         productes.remove(p);
         p.setEmpresa(null);

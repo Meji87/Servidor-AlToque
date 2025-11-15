@@ -2,7 +2,8 @@
 package com.altoque.altoque_server;
 
 /**
- *
+ * Classe que conté les constants del programa
+ * 
  * @author marc mestres
  */
 public final class Const {
@@ -18,16 +19,16 @@ public final class Const {
 
     // Tipus de petició 
     public static final class Peticio {
-        public static final String LOGIN                    = "LOGIN";
-        public static final String LOGOUT                   = "LOGOUT";
-        public static final String USUARI_ADD               = "USUARI_ADD";
-        public static final String USUARI_DEL               = "USUARI_DEL";
-        public static final String EMPRESA_ADD              = "EMPRESA_ADD";
-        public static final String EMPRESA_DEL              = "EMPRESA_DEL";
-        public static final String EMPRESA_LLISTAR          = "EMPRESA_LLISTAR";
-        public static final String PRODUCTE_ADD             = "PRODUCTE_ADD";
-        public static final String PRODUCTE_DEL             = "PRODUCTE_DEL";
-        public static final String PRODUCTE_LLISTAR         = "PRODUCTE_LLISTAR";
+        public static final String LOGIN            = "LOGIN";
+        public static final String LOGOUT           = "LOGOUT";
+        public static final String USUARI_ADD       = "USUARI_ADD";
+        public static final String USUARI_DEL       = "USUARI_DEL";
+        public static final String EMPRESA_ADD      = "EMPRESA_ADD";
+        public static final String EMPRESA_DEL      = "EMPRESA_DEL";
+        public static final String EMPRESA_LIST     = "EMPRESA_LIST";
+        public static final String PRODUCTE_ADD     = "PRODUCTE_ADD";
+        public static final String PRODUCTE_DEL     = "PRODUCTE_DEL";
+        public static final String PRODUCTE_LIST    = "PRODUCTE_LIST";
         
         private Peticio() {}
     }
@@ -39,7 +40,7 @@ public final class Const {
         private Resposta() {}
     }
 
-    // Claves para datos/params en DadesPeticio / RespostaPeticio
+    // Claus valors paràmetres
     public static final class Dades {
         public static final String TOKEN        = "token";
         public static final String NOM_USUARI   = "nomusuari";
@@ -52,7 +53,7 @@ public final class Const {
         private Dades() {}
     }
 
-    // Mensajes estándar (opcional, si quieres unificarlos)
+    // Missatges resposta peticions
     public static final class Missatge {
         public static final String ERR_PETICIO_DESCONEGUT   = "ERROR: Tipus de petició no suportat: ";
         public static final String ERR_PETICIO_INEXISTENT   = "ERROR: Petició buida";
@@ -96,13 +97,13 @@ public final class Const {
         
         private Missatge() {}
     }
-    // Config de sessió u otras constantes transversales (opcional)
+    // Configuració del servidor.
     public static final class Servidor {
         public static final int PORT_DEFECTE = 5050;
         private Servidor() {}
     }
     
-    // Config de sessió u otras constantes transversales (opcional)
+    // Configuració de sessió.
     public static final class Sessio {
         public static final int MINUTS_EXPIRACIO = 60;
         private Sessio() {}

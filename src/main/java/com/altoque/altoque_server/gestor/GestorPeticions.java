@@ -4,8 +4,8 @@ package com.altoque.altoque_server.gestor;
 import com.altoque.altoque_server.Const;
 import com.altoque.altoque_server.Const.Rol;
 import com.altoque.altoque_server.dto.EmpresaDto;
-import com.altoque.altoque_server.dto.RespostaPeticio;
-import com.altoque.altoque_server.dto.Peticio;
+import com.altoque.altoque_server.peticio.RespostaPeticio;
+import com.altoque.altoque_server.peticio.Peticio;
 import com.altoque.altoque_server.dto.ProducteDto;
 import com.altoque.altoque_server.model.Empresa;
 import com.altoque.altoque_server.model.Producte;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 /**
  * Punt central que gestiona les peticions.
  * Valida sessions i executa accions com el login o logout.
- * Manté dades de prova en memòria per poder treballar sense base de dades.
+ * Gestiona una BBDD.
  * 
  * @author marc mestres
  */
@@ -48,7 +48,7 @@ public class GestorPeticions {
     
     /**
      * Rep un missatge JSON, l'interpreta i retorna la resposta JSON.
-     * Si la petició és de login, comprova credencials; altre cas valida el token.
+     * Si la petició és de login, usuariAdd o empresaAdd no és comprova sessió; altre cas valida el token.
      * @param peticioJson JSON rebut del client
      * @return JSON amb la resposta
      */
@@ -67,14 +67,21 @@ public class GestorPeticions {
         }
     }
     
+    /**
+     * Funcio que dirigeix la petició cap a la funció correcponent
+     * @param p Petició a dirigir
+     * @return RespostaPeticio amb codi, missatge i dades del resultat.
+     * @throws GestorException 
+     */
     private RespostaPeticio router(Peticio p) throws GestorException {
         final String op = p.getPeticio();
         switch (op) {
-            case Const.Peticio.LOGOUT:
-                return logout(p);
-                
+            
             case Const.Peticio.LOGIN:
                 return login(p);
+                
+            case Const.Peticio.LOGOUT:
+                return logout(p);
                 
             case Const.Peticio.USUARI_ADD:
                 return afegirUsuari(p);
@@ -88,7 +95,7 @@ public class GestorPeticions {
             case Const.Peticio.EMPRESA_DEL: 
                 return eliminarEmpresa(p);
                 
-            case Const.Peticio.EMPRESA_LLISTAR:
+            case Const.Peticio.EMPRESA_LIST:
                 return llistarEmpreses(p);
 
             case Const.Peticio.PRODUCTE_ADD:
@@ -97,7 +104,7 @@ public class GestorPeticions {
             case Const.Peticio.PRODUCTE_DEL:
                 return eliminarProducte(p);
 
-            case Const.Peticio.PRODUCTE_LLISTAR:
+            case Const.Peticio.PRODUCTE_LIST:
                 return llistarProductes(p);
 
             
@@ -106,27 +113,53 @@ public class GestorPeticions {
         }
     }
 
+    /**
+     * Funcio que rep una petició i valida que no sigui null
+     * @param p Petició a validar
+     * @throws GestorException si peticio null
+     */
     private void requereixPeticioNoNull(Peticio p) throws GestorException{
         if (p == null)
             throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT);
     }
     
+
+    /**
+     * Funcio que rep una petició i valida que la llista de paràmetres data no sigui buida
+     * @param p Petició a validar
+     * @throws GestorException si parametre data es buit
+     */
     private void requereixData(Peticio p) throws GestorException{
         if (p.esDataBuit())
             throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
     }
 
+    /**
+     * Funcio que rep una petició i valida que el nombre de paràmtres de data sigui major que el passat per paràmetre
+     * @param p Petició a validar
+     * @throws GestorException si nombre de paràmetres inferior al passat per peràmetre
+     */
     private void requereixMinParams(Peticio p, int min) throws GestorException{
         if (p.sizeData() < min)
             throw new GestorException(Const.Missatge.ERR_PARAMETRE_INEXISTENT);
     }
 
+    /**
+     * Funcio que rep una petició i valida que el token passat per paràmetre correspongui a una sessió activa
+     * @param p Petició a validar
+     * @throws GestorException si sessió no vàlida
+     */
     private void requereixSessioValida(String token) throws GestorException{
         if (!sessions.esValida(token))
             throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
     }
 
-    
+    /**
+     * Funció que rep una peticio de LOGIN amb identificació i contrasenya. Si credencials correctes retorna identificació de sessió i rol.
+     * @param p peticio de LOGIN amb identificador i contrasenya
+     * @return si tot correcte retorna identificador de sessió (token) i rol associat a la sessió
+     * @throws GestorException llença excepció si no hi ha com a mínim 2 parametres
+     */
     private RespostaPeticio login(Peticio p) throws GestorException{
         // Validar dades
         requereixPeticioNoNull(p);
@@ -165,6 +198,12 @@ public class GestorPeticions {
                                    Const.Missatge.ERR_LOGIN_USUARI);
     }
     
+    /**
+     * Funció que rep una peticio de LOGOUT amb identificació de sessió vàlid a tencar.
+     * @param p Peticio amb token per tencar sessió
+     * @return retorna RespostaPeticio amb codi i missatge del resultat.
+     * @throws GestorException si la sessió no és vàlida
+     */
     private RespostaPeticio logout(Peticio p) throws GestorException{
         // Validar dades
         requereixPeticioNoNull(p);
@@ -175,6 +214,12 @@ public class GestorPeticions {
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_SESSIO_TANCADA);
     }
 
+    /**
+     * Funció que rep una peticio de USUARI_ADD amb els pàrametres nomusuari, contrasenya, nom, cognoms
+     * @param p Peticio amb els paràmetres corresponents
+     * @return retorna RespostaPeticio amb codi i missatge del resultat.
+     * @throws GestorException si no hi ha els paràmetres requerits
+     */
     private RespostaPeticio afegirUsuari(Peticio p) throws GestorException {
         // Validar dades
         requereixPeticioNoNull(p);
@@ -201,6 +246,12 @@ public class GestorPeticions {
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_USUARI_ADD);
     }
     
+    /**
+     * Funció que rep una peticio USUARI_DEL que eliminarà l'usuari amb l'identificador de sessió vinculat
+     * @param p Petició amb token
+     * @return retorna RespostaPeticio amb codi i missatge del resultat.
+     * @throws GestorException si la sessió no és vàlida
+     */
     private RespostaPeticio eliminarUsuari(Peticio p) throws GestorException{
         // Validar dades
         requereixPeticioNoNull(p);
@@ -219,6 +270,12 @@ public class GestorPeticions {
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_USUARI_DEL);
     }
     
+    /**
+     * Funció que rep una peticio EMPRESA_ADD amb els paràmetres cif, contrasenya i nom
+     * @param p Petició amb els parametres corresponents
+     * @return retorna RespostaPeticio amb codi i missatge del resultat.
+     * @throws GestorException si falta algún paràmetre
+     */
     private RespostaPeticio afegirEmpresa(Peticio p) throws GestorException {
         // Validar dades
         requereixPeticioNoNull(p);
@@ -243,6 +300,12 @@ public class GestorPeticions {
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_EMPRESA_ADD);
     }
     
+    /**
+     * Funció que rep una peticio EMPRESA_DEL que eliminarà l'empresa amb l'identificador de sessió vinculat
+     * @param p Petició amb token vàlid
+     * @return retorna RespostaPeticio amb codi i missatge del resultat.
+     * @throws GestorException si la sessió no és vàlida
+     */
     private RespostaPeticio eliminarEmpresa(Peticio p) throws GestorException{
         // Validar dades
         requereixPeticioNoNull(p);
@@ -260,6 +323,12 @@ public class GestorPeticions {
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_EMPRESA_DEL);
     }
     
+    /**
+     * Funció que rep una peticio EMPRESA_LIST que llista les empreses registrades a la BBDD en format EmpresaDto
+     * @param p Petició amb token d'empresa requerit
+     * @return RespostaPeticio amb codi, missatge i llista d'EmpresaDto del resultat.
+     * @throws GestorException 
+     */
     private RespostaPeticio llistarEmpreses(Peticio p) throws GestorException{
         // Validar dades
         requereixPeticioNoNull(p);
@@ -282,6 +351,12 @@ public class GestorPeticions {
         return r; 
     }
 
+    /**
+     * Funció que rep una peticio PRODUCTE_ADD amb token d'empresa i els paràmetres nom, descripció i preu
+     * @param p Petició amb el producte a afegir
+     * @return RespostaPeticio amb codi i missatge del resultat.
+     * @throws GestorException 
+     */
     private RespostaPeticio afegirProducte(Peticio p) throws GestorException {
         // Validar dades
         requereixPeticioNoNull(p);
@@ -301,7 +376,8 @@ public class GestorPeticions {
         // Validar i convertir preu
         double preuDbl;
         try{
-            preuDbl = Double.parseDouble(preu);
+            String preuConvertit = preu.trim().replace(',', '.');
+            preuDbl = Double.parseDouble(preuConvertit);
         }catch(NumberFormatException ex){
             
             throw new GestorException(Const.Missatge.ERR_PRODUCTE_PREU_INVALID + " | " + ex.getMessage(), ex);
@@ -319,6 +395,12 @@ public class GestorPeticions {
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_PRODUCTE_ADD + " | " + guardat.getId());
     }
     
+    /**
+     * Funció que rep una peticio PRODUCTE_DEL que eliminarà el producte de l'empresa amb l'identificador de sessió vinculat
+     * @param p Petició amb token
+     * @return RespostaPeticio amb codi i missatge del resultat.
+     * @throws GestorException 
+     */
     private RespostaPeticio eliminarProducte(Peticio p) throws GestorException{
         requereixPeticioNoNull(p);
         requereixData(p);
@@ -343,6 +425,12 @@ public class GestorPeticions {
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_PRODUCTE_DEL);
     }
 
+    /**
+     * Funció que rep una peticio PRODUCTE_LIST que llista els productes registrats en format ProducteDto i si per paràmetre se li passa el identificador (cif) d'una empresa, es llistaràn els productes d'aquesta empresa.
+     * @param p Petició amb parametre opcional
+     * @return RespostaPeticio amb codi, missatge i llista de ProducteDto del resultat.
+     * @throws GestorException 
+     */
     private RespostaPeticio llistarProductes(Peticio p) throws GestorException {
         // Validar dades
         requereixPeticioNoNull(p);

@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 
 /**
  * Classe que representa un usuari
+ * 
  * @author marc mestres
  */
 @Entity

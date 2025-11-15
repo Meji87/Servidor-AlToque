@@ -17,10 +17,20 @@ public class GestorUsuari {
     @Autowired
     UsuariDao usuariDao;
     
+    /**
+     * Busca un usuari a partir del seu nomusuari
+     * @param nomUsuari nomUsuari del Usuari a buscar
+     * @return Usuari si el troba
+     */
     public Usuari buscarPerNomUsuari(String nomUsuari){
         return usuariDao.buscarPerNomusuari(nomUsuari);
     }
     
+    /**
+     * Busca un usuari a partir del seu nom
+     * @param nom nom de l'usuari a buscar
+     * @return Usuari si el troba
+     */
     public Usuari buscarPerNom(String nom){
         return usuariDao.buscarPerNom(nom);
     }
@@ -45,6 +55,10 @@ public class GestorUsuari {
         usuariDao.eliminarUsuari(nomUsuari);
     }
         
+    /**
+     * Llista els usuaris 
+     * @return una llista d'usuaris.
+     */
     public List<Usuari> llistar(){
         return usuariDao.llistarUsuaris();
     }

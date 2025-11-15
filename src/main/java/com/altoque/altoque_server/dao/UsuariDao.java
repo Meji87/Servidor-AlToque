@@ -17,14 +17,28 @@ public class UsuariDao {
     @Autowired
     private UsuariRepositori usuariRepo;
     
+    /**
+     * Llista dels usuaris de la BBDD
+     * @return llista d'Usuaris
+     */
     public List<Usuari> llistarUsuaris(){
         return usuariRepo.findAll();
     }
     
+    /**
+     * Busca un Usuari a partir del seu nomusuari
+     * @param nomUsuari de l'Usuari a buscar
+     * @return Usuari trobat, en cas contrari null
+     */
     public Usuari buscarPerNomusuari(String nomUsuari){
         return usuariRepo.findByNomusuari(nomUsuari);
     }
-    
+  
+    /**
+     * Busca un Usuari a partir del seu nom
+     * @param nom de l'Usuari a buscar
+     * @return Usuari trobat, en cas contrari null
+     */
     public Usuari buscarPerNom(String nom){
         return usuariRepo.findByNom(nom);
     }

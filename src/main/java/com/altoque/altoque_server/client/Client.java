@@ -4,8 +4,8 @@ package com.altoque.altoque_server.client;
 
 import com.altoque.altoque_server.Const;
 import com.altoque.altoque_server.Const.Rol;
-import com.altoque.altoque_server.dto.Peticio;
-import com.altoque.altoque_server.dto.RespostaPeticio;
+import com.altoque.altoque_server.peticio.Peticio;
+import com.altoque.altoque_server.peticio.RespostaPeticio;
 import com.google.gson.Gson;
 import java.io.*;
 import java.net.Socket;
@@ -16,10 +16,9 @@ import com.altoque.altoque_server.model.Empresa;
 
 /**
  * Client de consola senzill per a AlToque.
- * - Menús clars i curts
  * - Un únic mètode send(...) per protocol
  * - Login únic; el servidor decideix el rol
- * - Alta usuari/empresa des de la pantalla principal
+ * - Alta usuari/empresa sense sessió
  * - Eliminar el propi usuari/empresa des de la sessió (esborra BBDD i sessió)
  * 
  * @author marc mestres
@@ -27,7 +26,7 @@ import com.altoque.altoque_server.model.Empresa;
 public class Client {
 
     // === Config ===
-    private static final String HOST = "localhost";
+    private static final String HOST = "localhost"; //10.2.94.42
     private static final int    PORT = 5050;
 
     // === Estat de la sessió local ===
@@ -271,7 +270,7 @@ public class Client {
     private void actionProducteLlistar() {
         ensureSessioEmpresa();
 
-        Peticio p = new Peticio(Const.Peticio.PRODUCTE_LLISTAR, token);
+        Peticio p = new Peticio(Const.Peticio.PRODUCTE_LIST, token);
         //p.addDataObject(token);
 
         RespostaPeticio r = send(p);
@@ -282,7 +281,7 @@ public class Client {
     
     private void actionProducteLlistarEmpresa() {
         ensureSessioEmpresa();
-        Peticio p = new Peticio(Const.Peticio.PRODUCTE_LLISTAR, token);
+        Peticio p = new Peticio(Const.Peticio.PRODUCTE_LIST, token);
         // El servidor espera un CIF opcional, no el token:
         p.addData(nomUsuari); // nomUsuari en sesión de EMPRESA es el CIF visible
         RespostaPeticio r = send(p);
@@ -292,7 +291,7 @@ public class Client {
     
     private void actionEmpresaLlistar() {
 
-        Peticio p = new Peticio(Const.Peticio.EMPRESA_LLISTAR, token);
+        Peticio p = new Peticio(Const.Peticio.EMPRESA_LIST, token);
         //p.addDataObject(token);
 
         RespostaPeticio r = send(p);
