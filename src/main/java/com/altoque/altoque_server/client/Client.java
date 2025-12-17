@@ -4,6 +4,8 @@ package com.altoque.altoque_server.client;
 
 import com.altoque.altoque_server.Const;
 import com.altoque.altoque_server.Const.Rol;
+import com.altoque.altoque_server.dto.EmpresaDto;
+import com.altoque.altoque_server.dto.PackDto;
 import com.altoque.altoque_server.peticio.Peticio;
 import com.altoque.altoque_server.peticio.RespostaPeticio;
 import com.google.gson.Gson;
@@ -11,7 +13,11 @@ import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 import com.altoque.altoque_server.dto.ProducteDto;
+import com.altoque.altoque_server.dto.UsuariDto;
+import com.altoque.altoque_server.gestor.GestorXifrat;
 import com.altoque.altoque_server.model.Empresa;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -88,16 +94,18 @@ public class Client {
         headerSessio();
         System.out.println("***** Menu USUARI *****");
         System.out.println(" [1] Whoami / Veure token");
-        System.out.println(" [2] Eliminar el meu USUARI");
-        System.out.println(" [3] Veure empreses");
+        System.out.println(" [2] Modificar les meves dades");
+        System.out.println(" [3] Eliminar el meu USUARI");
+        System.out.println(" [4] Veure empreses");
         System.out.println(" [9] Logout");
         System.out.println(" [0] Sortir");
 
         int op = askInt("Opcio: ", -1);
         switch (op) {
             case 1 -> actionWhoAmI();
-            case 2 -> actionEliminarPropiCompte(); // esborra usuari + sessió
-            case 3 -> actionEmpresaLlistar();
+            case 2 -> actionUsuariMod();
+            case 3 -> actionEliminarPropiCompte(); // esborra usuari + sessió
+            case 4 -> actionEmpresaLlistar();
             case 9 -> actionLogout();
             case 0 -> { return false; }
             default -> System.out.println("Opcio no valida.");
@@ -111,24 +119,39 @@ public class Client {
     private boolean menuEmpresa() {
         headerSessio();
         System.out.println("***** Menu EMPRESA *****");
-        System.out.println(" [1] Whoami / Veure token");
-        System.out.println(" [2] Eliminar la meva EMPRESA");
-        System.out.println(" [3] Afegir producte");
-        System.out.println(" [4] Eliminar producte");
-        System.out.println(" [5] Llistar productes (tots)");
-        System.out.println(" [6] Llistar productes de la meva empresa");
-        System.out.println(" [9] Logout");
-        System.out.println(" [0] Sortir");
+        System.out.println(" [1]  Whoami / Veure token");
+        System.out.println(" [2]  Modificar les meves dades");
+        System.out.println(" [3]  Eliminar la meva EMPRESA");
+        System.out.println(" [4]  Afegir producte");
+        System.out.println(" [5]  Modificar producte");
+        System.out.println(" [6]  Eliminar producte");
+        System.out.println(" [7]  Llistar productes (tots)");
+        System.out.println(" [8]  Llistar productes (meva empresa)");
+        System.out.println(" [9]  Logout");
+        System.out.println(" [10] Afegir pack");
+        System.out.println(" [11] Modificar pack");
+        System.out.println(" [12] Eliminar pack");
+        System.out.println(" [13] Llistar packs (meva empresa)");
+        System.out.println(" [14] Veure un pack (GET per id)");
+        System.out.println(" [0]  Sortir");
 
         int op = askInt("Opcio: ", -1);
         switch (op) {
             case 1 -> actionWhoAmI();
-            case 2 -> actionEliminarPropiCompte(); // esborra empresa + sessió
-            case 3 -> actionProducteAdd();
-            case 4 -> actionProducteDel();
-            case 5 -> actionProducteLlistar();
-            case 6 -> actionProducteLlistarEmpresa();
+            case 2 -> actionEmpresaMod();
+            case 3 -> actionEliminarPropiCompte(); // esborra empresa + sessió
+            case 4 -> actionProducteAdd();
+            case 5 -> actionProducteMod();
+            case 6 -> actionProducteDel();
+            case 7 -> actionProducteLlistar();
+            case 8 -> actionProducteLlistarEmpresa();
             case 9 -> actionLogout();
+            case 10 -> actionPackAdd();
+            case 11 -> actionPackMod();
+            case 12 -> actionPackDel();
+            case 13 -> actionPackListEmpresa();
+            case 14 -> actionPackGet();
+
             case 0 -> { return false; }
             default -> System.out.println("Opcio no valida.");
         }
@@ -155,6 +178,26 @@ public class Client {
 
         printResposta(send(p));
     }
+    
+    // Modificar usuari
+    private void actionUsuariMod(){
+        System.out.println("\n***** Modificar dades USUARI *****");
+        System.out.println("Deixa en blanc el camp que no vulguis modificar");
+        String nom = askStr("Nou nom: ", false);          // Pot ser buit
+        String cognoms = askStr("Nous cognoms: ", false); // Pot ser buit
+        String pwd = askStr("Nova contrasenya: ", false); // Pot ser buit
+        
+        if (nom != null && nom.isBlank()) nom = null;
+        if (cognoms != null && cognoms.isBlank()) cognoms = null;
+        if (pwd != null && pwd.isBlank()) pwd = null;
+        
+        UsuariDto dto = new UsuariDto(nomUsuari, nom, cognoms, pwd);
+        
+        Peticio p = new Peticio(Const.Peticio.USUARI_MOD, token);
+        p.addData(dto);
+
+        printResposta(send(p));
+    }
 
     // Alta empresa (des de pantalla principal)
     private void actionAltaEmpresa() {
@@ -167,6 +210,24 @@ public class Client {
         p.addData(cif);
         p.addData(pwd);
         p.addData(nom);
+
+        printResposta(send(p));
+    }
+    
+    // Modificar empresa
+    private void actionEmpresaMod(){
+        System.out.println("\n***** Modificar dades EMPRESA *****");
+        System.out.println("Deixa en blanc el camp que no vulguis modificar");
+        String nom = askStr("Nom empresa: ", false);
+        String pwd = askStr("Contrasenya: ", false);
+        
+        if (nom != null && nom.isBlank()) nom = null;
+        if (pwd != null && pwd.isBlank()) pwd = null;
+        
+        EmpresaDto dto = new EmpresaDto(nomUsuari, nom, pwd);
+
+        Peticio p = new Peticio(Const.Peticio.EMPRESA_MOD, token);
+        p.addData(dto);
 
         printResposta(send(p));
     }
@@ -254,6 +315,27 @@ public class Client {
 
         printResposta(send(p));
     }
+    
+    private void actionProducteMod() {
+        System.out.println("\n***** Modificar dades PRODUCTE *****");
+        System.out.println("Deixa en blanc el camp que no vulguis modificar");
+        Long id = askLong("Id del producte a modificar: ", 0L);
+        String nom = askStr("nom producte: ", false);
+        String desc = askStr("nova descripcio: ", false);
+        Double preu = askDouble("nou preu", 0.0);
+        
+        if (id != null && id.equals(0L)) id = null;
+        if (nom != null && nom.isBlank()) nom = null;
+        if (desc != null && desc.isBlank()) desc = null;
+        if (preu != null && preu == 0) preu = null;
+        
+        ProducteDto dto = new ProducteDto(id, nom, desc, preu);
+
+        Peticio p = new Peticio(Const.Peticio.PRODUCTE_MOD, token);
+        p.addData(dto);
+
+        printResposta(send(p));
+    }
 
     private void actionProducteDel() {
         ensureSessioEmpresa();
@@ -298,6 +380,123 @@ public class Client {
         if (!printResposta(r)) return;
         printEmpreses(r);
     }
+    
+    //PACKS
+    
+    private void actionPackAdd() {
+        ensureSessioEmpresa();
+        System.out.println("\n***** Afegir PACK *****");
+
+        String nom = askStr("Nom pack: ", true);
+        Long preu = askLong("Preu (ex: 2490): ", null);
+
+        int n = askInt("Quants items? ", 1);
+        List<PackDto.PackItemDto> items = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            System.out.println("Item " + (i+1));
+            Long producteId = askLong("  Producte ID: ", null);
+            Integer q = askInt("  Quantitat: ", 1);
+
+            PackDto.PackItemDto it = new PackDto.PackItemDto();
+            it.setProducteId(producteId);
+            it.setQuantitat(q);
+            items.add(it);
+        }
+
+        PackDto dto = new PackDto();
+        dto.setNom(nom);
+        dto.setPreu(preu);
+        dto.setItems(items);
+
+        Peticio p = new Peticio(Const.Peticio.PACK_ADD, token);
+        p.addData(dto);
+
+        printResposta(send(p));
+    }
+
+    private void actionPackMod() {
+        ensureSessioEmpresa();
+        System.out.println("\n***** Modificar PACK *****");
+
+        String id = askStr("ID pack: ", true);
+        String nom = askStr("Nou nom (enter per no tocar): ", false);
+        Long preu = askLong("Nou preu (enter per no tocar): ", null);
+
+        int n = askInt("Quants items vols deixar (REEMPLAÇA)? ", 1);
+        List<PackDto.PackItemDto> items = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            System.out.println("Item " + (i+1));
+            Long producteId = askLong("  Producte ID: ", null);
+            Integer q = askInt("  Quantitat: ", 1);
+
+            PackDto.PackItemDto it = new PackDto.PackItemDto();
+            it.setProducteId(producteId);
+            it.setQuantitat(q);
+            items.add(it);
+        }
+
+        PackDto dto = new PackDto();
+        dto.setId(id);
+        if (nom != null && !nom.isBlank()) dto.setNom(nom.trim());
+        if (preu != null) dto.setPreu(preu);
+        dto.setItems(items); // IMPORTANT: mod fa replace
+
+        Peticio p = new Peticio(Const.Peticio.PACK_MOD, token);
+        p.addData(dto);
+
+        printResposta(send(p));
+    }
+    
+    private void actionPackDel() {
+        ensureSessioEmpresa();
+        System.out.println("\n***** Eliminar PACK *****");
+
+        String id = askStr("ID pack a eliminar: ", true);
+
+        Peticio p = new Peticio(Const.Peticio.PACK_DEL, token);
+        p.addData(id);
+
+        printResposta(send(p));
+    }
+
+    private void actionPackGet() {
+        ensureSessioEmpresa();
+        System.out.println("\n***** GET PACK *****");
+
+        String id = askStr("ID pack: ", true);
+
+        Peticio p = new Peticio(Const.Peticio.PACK_GET, token);
+        p.addData(id);
+
+        RespostaPeticio r = send(p);
+        if (!printResposta(r)) return;
+
+        PackDto dto = r.getData(0, PackDto.class);
+        printPack(dto);
+    }
+    
+    private void actionPackListEmpresa() {
+        ensureSessioEmpresa();
+
+        Peticio p = new Peticio(Const.Peticio.PACK_LIST, token);
+        // si el teu servidor espera CIF opcional:
+        // p.addData(nomUsuari);
+
+        RespostaPeticio r = send(p);
+        if (!printResposta(r)) return;
+
+        PackDto[] arr = r.getData(0, PackDto[].class);
+        if (arr == null || arr.length == 0) {
+            System.out.println("(sense packs)");
+            return;
+        }
+        for (PackDto dto : arr) printPack(dto);
+    }
+
+
+
 
     // ==========
     // Helpers
@@ -318,8 +517,9 @@ public class Client {
         if (arr == null || arr.length == 0) { System.out.println("(sense productes)"); return; }
         System.out.println("___ Productes ___");
         for (ProducteDto p : arr) {
-            System.out.printf("  [%s] %s  --  %.2f €%n", p.id, p.nom, p.preu ,
-                    p.empresaCif != null ? "(" + p.empresaCif + ")" : "");
+            System.out.printf("  [%s] %s  --  %.2f € %s%n", 
+                    p.id, p.nom, p.preu, (p.empresaCif != null ? "(" + p.empresaCif + ")" : ""));
+
         }
     }
 
@@ -331,7 +531,16 @@ public class Client {
             System.out.printf("   %s  --  %s%n", e.getCif(), e.getNom());
         }
     }
-
+    
+    private void printPack(PackDto p) {
+        if (p == null) { System.out.println("(pack null)"); return; }
+        System.out.printf("PACK [%s] %s - %d%n", p.getId(), p.getNom(), p.getPreu());
+        if (p.getItems() != null) {
+            for (PackDto.PackItemDto it : p.getItems()) {
+                System.out.printf("   - producteId=%d x %d%n", it.getProducteId(), it.getQuantitat());
+            }
+        }
+    }
 
     private void ensureSessioEmpresa() {
         if (token == null || rol != Rol.EMPRESA) {
@@ -348,15 +557,22 @@ public class Client {
              BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             String json = gson.toJson(peticio);
-            out.println(json);
+            String jsonEncriptat = GestorXifrat.xifrar(json); // nova
+            out.println(jsonEncriptat); // modificada
+            out.flush(); // nova
 
-            String respostaJson = br.readLine();
+            String respostaJsonEncriptada = br.readLine(); // modificada
+            String respostaJson = GestorXifrat.desxifrar(respostaJsonEncriptada); //nova
             if (respostaJson == null) return null;
 
             return gson.fromJson(respostaJson, RespostaPeticio.class);
+        
         } catch (IOException e) {
             System.out.println("Error de connexio: " + e.getMessage());
-            return null;
+            return new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, "Error de connexio: " + e.getMessage());
+        } catch (Exception ex){
+            System.out.println("Error de xifratge: " + ex.getMessage());
+            return new RespostaPeticio(Const.Resposta.ERROR_RETURN_CODE, "Error de xifratge: " + ex.getMessage());
         }
     }
 
@@ -379,6 +595,26 @@ public class Client {
             if (s == null || s.isBlank()) return defaultVal;
             try { return Integer.parseInt(s.trim()); }
             catch (NumberFormatException e) { System.out.println("Introdueix un numero."); }
+        }
+    }
+    
+    private Long askLong(String prompt, Long defaultVal) {
+        while (true) {
+            System.out.print(prompt);
+            String s = in.nextLine();
+            if (s == null || s.isBlank()) return defaultVal;
+            try { return Long.parseLong(s.trim()); }
+            catch (NumberFormatException e) { System.out.println("Introdueix un numero."); }
+        }
+    }
+    
+    private Double askDouble(String prompt, Double defaultVal) {
+        while (true) {
+            System.out.print(prompt);
+            String s = in.nextLine();
+            if (s == null || s.isBlank()) return defaultVal;
+            try { return Double.parseDouble(s.trim()); }
+            catch (NumberFormatException e) { System.out.println("Introdueix un numero (ex: 1.25)."); }
         }
     }
 

@@ -62,4 +62,8 @@ public class GestorUsuari {
     public List<Usuari> llistar(){
         return usuariDao.llistarUsuaris();
     }
+    
+    public void modificar(Usuari usuari) throws GestorException{
+        usuariDao.modificarUsuari(usuari);
+    }
 }

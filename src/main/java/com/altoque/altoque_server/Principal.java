@@ -38,7 +38,7 @@ public class Principal {
             int port = Const.Servidor.PORT_DEFECTE;
 
             for (String a : args.getSourceArgs()) {
-                if (a.startsWith("--port=")) port = Integer.parseInt(a.substring(7));
+                if (a.startsWith(Const.Servidor.PORT_TXT_PARAMETRE)) port = Integer.parseInt(a.substring(7));
             }
 
             ServidorAlToque s = new ServidorAlToque(port, peticions);

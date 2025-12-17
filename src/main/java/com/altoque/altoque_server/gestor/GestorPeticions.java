@@ -4,15 +4,20 @@ package com.altoque.altoque_server.gestor;
 import com.altoque.altoque_server.Const;
 import com.altoque.altoque_server.Const.Rol;
 import com.altoque.altoque_server.dto.EmpresaDto;
+import com.altoque.altoque_server.dto.PackDto;
 import com.altoque.altoque_server.peticio.RespostaPeticio;
 import com.altoque.altoque_server.peticio.Peticio;
 import com.altoque.altoque_server.dto.ProducteDto;
+import com.altoque.altoque_server.dto.UsuariDto;
 import com.altoque.altoque_server.model.Empresa;
+import com.altoque.altoque_server.model.Pack;
+import com.altoque.altoque_server.model.PackItem;
 import com.altoque.altoque_server.model.Producte;
 import com.altoque.altoque_server.model.Sessio;
 import com.altoque.altoque_server.model.Usuari;
 import com.altoque.altoque_server.servidor.GestorException;
 import com.google.gson.Gson;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +35,9 @@ public class GestorPeticions {
     private final GestorUsuari usuaris;
     private final GestorEmpresa empreses;
     private final GestorProducte productes;
+    private final GestorPack packs;
+    private final GestorPackItem packItems;
+    
     private Gson gson = new Gson();
     
     /**
@@ -39,11 +47,13 @@ public class GestorPeticions {
      * @param empreses instància compartida d'empreses
      * @param productes  instància compartida de productes
      */
-    public GestorPeticions(GestorSessions sessions, GestorUsuari usuaris, GestorEmpresa empreses, GestorProducte productes) {
+    public GestorPeticions(GestorSessions sessions, GestorUsuari usuaris, GestorEmpresa empreses, GestorProducte productes, GestorPack packs, GestorPackItem packItems) {
         this.sessions = sessions;
         this.usuaris = usuaris;
         this.empreses = empreses;
         this.productes = productes;
+        this.packs = packs;
+        this.packItems = packItems;
     }
     
     /**
@@ -85,12 +95,18 @@ public class GestorPeticions {
                 
             case Const.Peticio.USUARI_ADD:
                 return afegirUsuari(p);
+             
+            case Const.Peticio.USUARI_MOD:
+                return modificarUsuari(p);   
                 
             case Const.Peticio.USUARI_DEL:
                 return eliminarUsuari(p);
                 
             case Const.Peticio.EMPRESA_ADD:
                 return afegirEmpresa(p);
+                
+            case Const.Peticio.EMPRESA_MOD:
+                return modificarEmpresa(p);
                 
             case Const.Peticio.EMPRESA_DEL: 
                 return eliminarEmpresa(p);
@@ -101,12 +117,29 @@ public class GestorPeticions {
             case Const.Peticio.PRODUCTE_ADD:
                 return afegirProducte(p);
                 
+            case Const.Peticio.PRODUCTE_MOD:
+                return modificarProducte(p);
+                
             case Const.Peticio.PRODUCTE_DEL:
                 return eliminarProducte(p);
 
             case Const.Peticio.PRODUCTE_LIST:
                 return llistarProductes(p);
-
+                
+            case Const.Peticio.PACK_ADD:
+                return afegirPack(p);
+                
+            case Const.Peticio.PACK_MOD:
+                return modificarPack(p);
+                
+            case Const.Peticio.PACK_DEL:
+                return eliminarPack(p);
+                
+            case Const.Peticio.PACK_LIST:
+                return llistarPacks(p);
+                
+            case Const.Peticio.PACK_GET:
+                return obtenirPack(p);
             
             default:
                 throw new GestorException(Const.Missatge.ERR_PETICIO_INEXISTENT + " | " + op);
@@ -246,6 +279,34 @@ public class GestorPeticions {
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_USUARI_ADD);
     }
     
+    private RespostaPeticio modificarUsuari(Peticio p) throws GestorException{
+        // Validar dades
+        requereixPeticioNoNull(p);
+        requereixData(p);
+        requereixMinParams(p, 1);
+        requereixSessioValida(p.getToken());
+        
+        UsuariDto usuariDto = (UsuariDto)p.getData(0, UsuariDto.class);
+        Usuari u = usuaris.buscarPerNomUsuari(usuariDto.getNomusuari());
+        if (u == null) throw new GestorException(Const.Missatge.ERR_USUARI_MOD);
+        
+        if(usuariDto.getNom() != null && !usuariDto.getNom().isBlank()){
+            u.setNom(usuariDto.getNom());
+        }
+        
+        if(usuariDto.getCognoms() != null && !usuariDto.getCognoms().isBlank()){
+            u.setCognoms(usuariDto.getCognoms());
+        }
+        
+        if(usuariDto.getContrasenya() != null && !usuariDto.getContrasenya().isBlank()){
+            u.setContrasenya(usuariDto.getContrasenya());
+        }
+        
+        usuaris.modificar(u);
+        
+        return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_USUARI_MOD);
+    }
+    
     /**
      * Funció que rep una peticio USUARI_DEL que eliminarà l'usuari amb l'identificador de sessió vinculat
      * @param p Petició amb token
@@ -298,6 +359,30 @@ public class GestorPeticions {
         empreses.inserir(e);
 
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_EMPRESA_ADD);
+    }
+    
+    private RespostaPeticio modificarEmpresa(Peticio p) throws GestorException{
+        // Validar dades
+        requereixPeticioNoNull(p);
+        requereixData(p);
+        requereixMinParams(p, 1);
+        requereixSessioValida(p.getToken());
+        
+        EmpresaDto empresaDto = (EmpresaDto)p.getData(0, EmpresaDto.class);
+        Empresa e = empreses.buscarPerCif(empresaDto.getCif());
+        if (e == null) throw new GestorException(Const.Missatge.ERR_EMPRESA_EXISTENT);
+        
+        if(empresaDto.getNom() != null && !empresaDto.getNom().isBlank()){
+            e.setNom(empresaDto.getNom());
+        }
+        
+        if(empresaDto.getContrasenya() != null && !empresaDto.getContrasenya().isBlank()){
+            e.setContrasenya(empresaDto.getContrasenya());
+        }
+        
+        empreses.modificar(e);
+        
+        return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_EMPRESA_MOD);
     }
     
     /**
@@ -395,6 +480,35 @@ public class GestorPeticions {
         return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_PRODUCTE_ADD + " | " + guardat.getId());
     }
     
+    private RespostaPeticio modificarProducte(Peticio p) throws GestorException{
+        // Validar dades
+        requereixPeticioNoNull(p);
+        requereixData(p);
+        //requereixMinParams(p, 1);
+        requereixSessioValida(p.getToken());
+        
+        ProducteDto producteDto = (ProducteDto)p.getData(0, ProducteDto.class);
+        if (producteDto.getId() == null) throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+        Producte pr = productes.buscarPerId(producteDto.getId()); 
+        if (pr == null) throw new GestorException(Const.Missatge.ERR_PRODUCTE_INEXISTENT);
+        
+        if(producteDto.getNom() != null && !producteDto.getNom().isBlank()){
+            pr.setNom(producteDto.getNom());
+        }
+        
+        if(producteDto.getDescripcio()!= null && !producteDto.getDescripcio().isBlank()){
+            pr.setDescripcio(producteDto.getDescripcio());
+        }
+        
+        if(producteDto.getPreu() != null){
+            pr.setPreu(producteDto.getPreu());
+        }
+        
+        productes.modificar(pr);
+        
+        return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, Const.Missatge.OK_PRODUCTE_MOD);
+    }
+    
     /**
      * Funció que rep una peticio PRODUCTE_DEL que eliminarà el producte de l'empresa amb l'identificador de sessió vinculat
      * @param p Petició amb token
@@ -467,4 +581,282 @@ public class GestorPeticions {
         return r;
     }
     
+    private RespostaPeticio afegirPack(Peticio p) throws GestorException {
+        requereixPeticioNoNull(p);
+        requereixData(p);
+        requereixMinParams(p, 1);
+        requereixSessioValida(p.getToken());
+
+        Sessio s = sessions.buscarSessio(p.getToken());
+        if (s == null) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
+
+        Empresa e = empreses.buscarPerCif(s.nomUsuari);
+        if (e == null) throw new GestorException(Const.Missatge.ERR_EMPRESA_INEXISTENT);
+
+        PackDto dto = p.getData(0, PackDto.class);
+        if (dto == null) throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+        if (dto.getNom() == null || dto.getNom().isBlank())
+            throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+        if (dto.getPreu() == null || dto.getPreu() < 0)
+            throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+        if (dto.getItems() == null || dto.getItems().isEmpty())
+            throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+        // 1) Crear i guardar Pack
+        Pack pack = new Pack();
+        pack.setNom(dto.getNom());
+        pack.setPreu(dto.getPreu());
+        pack.setEmpresa(e);
+
+        Pack packGuardat = packs.afegir(pack);
+
+        // 2) Crear i guardar PackItems
+        for (PackDto.PackItemDto itemDto : dto.getItems()) {
+            if (itemDto == null) throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+            if (itemDto.getQuantitat() == null || itemDto.getQuantitat() <= 0)
+                throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+            if (itemDto.getProducteId() == null)
+                throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+            Producte pr = productes.buscarPerId(itemDto.getProducteId());
+            if (pr == null) throw new GestorException(Const.Missatge.ERR_PRODUCTE_INEXISTENT);
+
+            // Validar que el producte és de la mateixa empresa
+            if (pr.getEmpresa() == null || pr.getEmpresa().getCif() == null ||
+                !pr.getEmpresa().getCif().equals(e.getCif())) {
+                throw new GestorException("ERR_PRODUCTE_NO_PERTANY_A_EMPRESA");
+            }
+
+            PackItem pi = new PackItem();
+            pi.setPack(packGuardat);
+            pi.setProducte(pr);
+            pi.setQuantitat(itemDto.getQuantitat());
+
+            packItems.afegir(pi);
+        }
+
+        RespostaPeticio r = new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, "OK_PACK_ADD");
+        r.addData(packGuardat.getId());
+        return r;
+    }
+    
+    private RespostaPeticio modificarPack(Peticio p) throws GestorException {
+        requereixPeticioNoNull(p);
+        requereixData(p);
+        requereixMinParams(p, 1);
+        requereixSessioValida(p.getToken());
+
+        Sessio s = sessions.buscarSessio(p.getToken());
+        if (s == null) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
+
+        Empresa e = empreses.buscarPerCif(s.nomUsuari);
+        if (e == null) throw new GestorException(Const.Missatge.ERR_EMPRESA_INEXISTENT);
+
+        PackDto dto = p.getData(0, PackDto.class);
+        if (dto == null) throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+        if (dto.getId() == null || dto.getId().isBlank())
+            throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+        long idPack;
+        try {
+            idPack = Long.parseLong(dto.getId());
+        } catch (NumberFormatException ex) {
+            throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT + " | idPack invàlid");
+        }
+
+        Pack pack = packs.buscarPerId(idPack);
+        if (pack == null) throw new GestorException("ERR_PACK_INEXISTENT");
+
+        // Validar propietari
+        if (pack.getEmpresa() == null || pack.getEmpresa().getCif() == null ||
+            !pack.getEmpresa().getCif().equals(e.getCif())) {
+            throw new GestorException("ERR_PACK_NO_PERTANY_A_EMPRESA");
+        }
+
+        // Actualitzar camps
+        if (dto.getNom() != null && !dto.getNom().isBlank()) {
+            pack.setNom(dto.getNom());
+        }
+        if (dto.getPreu() != null && dto.getPreu() >= 0) {
+            pack.setPreu(dto.getPreu());
+        }
+
+        packs.modificarPack(pack);
+
+        if (dto.getItems() == null || dto.getItems().isEmpty())
+            throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+        
+        // Reemplaçar items
+        packItems.eliminarPerPack(idPack);
+
+        for (PackDto.PackItemDto itemDto : dto.getItems()) {
+            if (itemDto == null) throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+            if (itemDto.getQuantitat() == null || itemDto.getQuantitat() <= 0)
+                throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+            if (itemDto.getProducteId() == null)
+                throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+            Producte pr = productes.buscarPerId(itemDto.getProducteId());
+            if (pr == null) throw new GestorException(Const.Missatge.ERR_PRODUCTE_INEXISTENT);
+
+            if (pr.getEmpresa() == null || pr.getEmpresa().getCif() == null ||
+                !pr.getEmpresa().getCif().equals(e.getCif())) {
+                throw new GestorException("ERR_PRODUCTE_NO_PERTANY_A_EMPRESA");
+            }
+
+            PackItem pi = new PackItem();
+            pi.setPack(pack);
+            pi.setProducte(pr);
+            pi.setQuantitat(itemDto.getQuantitat());
+
+            packItems.afegir(pi);
+        }
+
+        return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, "OK_PACK_MOD");
+    }
+    
+    private RespostaPeticio eliminarPack(Peticio p) throws GestorException {
+        requereixPeticioNoNull(p);
+        requereixData(p);
+        requereixMinParams(p, 1);
+        requereixSessioValida(p.getToken());
+
+        Sessio s = sessions.buscarSessio(p.getToken());
+        if (s == null) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
+
+        Empresa e = empreses.buscarPerCif(s.nomUsuari);
+        if (e == null) throw new GestorException(Const.Missatge.ERR_EMPRESA_INEXISTENT);
+
+        String packIdStr = p.getData(0, String.class);
+        if (packIdStr == null || packIdStr.isBlank())
+            throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+        long idPack;
+        try {
+            idPack = Long.parseLong(packIdStr);
+        } catch (NumberFormatException ex) {
+            throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT + " | idPack invàlid");
+        }
+
+        Pack pack = packs.buscarPerId(idPack);
+        if (pack == null) throw new GestorException("ERR_PACK_INEXISTENT");
+
+        if (pack.getEmpresa() == null || pack.getEmpresa().getCif() == null ||
+            !pack.getEmpresa().getCif().equals(e.getCif())) {
+            throw new GestorException("ERR_PACK_NO_PERTANY_A_EMPRESA");
+        }
+
+        // Primer items, després pack
+        packItems.eliminarPerPack(idPack);
+        packs.eliminar(idPack);
+
+        return new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, "OK_PACK_DEL");
+    }
+    
+    private RespostaPeticio llistarPacks(Peticio p) throws GestorException {
+        requereixPeticioNoNull(p);
+        requereixSessioValida(p.getToken());
+
+        // Si viene cif, lista por cif. Si no, lista por la empresa de la sesión.
+        String cif;
+        if (!p.esDataBuit()) {
+            cif = p.getData(0, String.class);
+        } else {
+            Sessio s = sessions.buscarSessio(p.getToken());
+            cif = s.nomUsuari;
+        }
+
+        List<Pack> llista = packs.llistarPerEmpresa(cif);
+
+        // Mapeo a DTO (sin items para listado rápido)
+        PackDto[] dto = new PackDto[llista.size()];
+        for (int i = 0; i < llista.size(); i++) {
+            Pack pk = llista.get(i);
+
+            PackDto d = new PackDto();
+            d.setId(String.valueOf(pk.getId()));
+            d.setNom(pk.getNom());
+            d.setPreu(pk.getPreu());
+            d.setEmpresaCif(pk.getEmpresa() != null ? pk.getEmpresa().getCif() : null);
+            d.setItems(null); // opcional en list
+
+            dto[i] = d;
+        }
+
+        RespostaPeticio r = new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, "OK_PACK_LIST");
+        r.addData(dto);
+        return r;
+    }
+    
+    private RespostaPeticio obtenirPack(Peticio p) throws GestorException {
+    requereixPeticioNoNull(p);
+    requereixData(p);
+    requereixMinParams(p, 1);
+    requereixSessioValida(p.getToken());
+
+    // Empresa desde sesión
+    Sessio s = sessions.buscarSessio(p.getToken());
+    if (s == null) throw new GestorException(Const.Missatge.ERR_SESSIO_INVALIDA);
+
+    Empresa e = empreses.buscarPerCif(s.nomUsuari);
+    if (e == null) throw new GestorException(Const.Missatge.ERR_EMPRESA_INEXISTENT);
+
+    // Leer packId
+    String packIdStr = p.getData(0, String.class);
+    if (packIdStr == null || packIdStr.isBlank())
+        throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT);
+
+    long packId;
+    try {
+        packId = Long.parseLong(packIdStr);
+    } catch (NumberFormatException ex) {
+        throw new GestorException(Const.Missatge.ERR_PARAMETRE_BUIT + " | idPack invàlid");
+    }
+
+    // Buscar pack
+    Pack pack = packs.buscarPerId(packId);
+    if (pack == null) throw new GestorException("ERR_PACK_INEXISTENT");
+
+    // Validar que pertenece a la empresa
+    if (pack.getEmpresa() == null || pack.getEmpresa().getCif() == null ||
+        !pack.getEmpresa().getCif().equals(e.getCif())) {
+        throw new GestorException("ERR_PACK_NO_PERTANY_A_EMPRESA");
+    }
+
+    // Crear DTO del pack
+    PackDto dto = new PackDto();
+    dto.setId(String.valueOf(pack.getId()));
+    dto.setNom(pack.getNom());
+    dto.setPreu(pack.getPreu());
+    dto.setEmpresaCif(e.getCif());
+
+    // Cargar items
+    List<PackItem> items = packItems.llistarPerPack(packId);
+    List<PackDto.PackItemDto> itemsDto = new ArrayList<>();
+
+    for (PackItem pi : items) {
+        PackDto.PackItemDto itemDto = new PackDto.PackItemDto();
+        itemDto.setProducteId(pi.getProducte().getId());
+        itemDto.setQuantitat(pi.getQuantitat());
+        itemsDto.add(itemDto);
+    }
+
+    dto.setItems(itemsDto);
+
+    RespostaPeticio r = new RespostaPeticio(Const.Resposta.OK_RETURN_CODE, "OK_PACK_GET");
+    r.addData(dto);
+    return r;
+}
+
+
+
+
 }

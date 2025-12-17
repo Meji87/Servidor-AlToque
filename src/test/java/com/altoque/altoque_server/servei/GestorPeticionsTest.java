@@ -5,13 +5,17 @@ import com.altoque.altoque_server.Const;
 import static com.altoque.altoque_server.Const.Resposta.ERROR_RETURN_CODE;
 import static com.altoque.altoque_server.Const.Resposta.OK_RETURN_CODE;
 import com.altoque.altoque_server.Const.Rol;
+import com.altoque.altoque_server.dto.PackDto;
 import com.altoque.altoque_server.peticio.Peticio;
 import com.altoque.altoque_server.dto.ProducteDto;
 import com.altoque.altoque_server.peticio.RespostaPeticio;
 import com.altoque.altoque_server.gestor.GestorPeticions;
 import com.altoque.altoque_server.model.Empresa;
+import com.altoque.altoque_server.model.Producte;
 import com.altoque.altoque_server.model.Usuari;
 import com.altoque.altoque_server.repositori.EmpresaRepositori;
+import com.altoque.altoque_server.repositori.PackItemRepositori;
+import com.altoque.altoque_server.repositori.PackRepositori;
 import com.altoque.altoque_server.repositori.ProducteRepositori;
 import com.altoque.altoque_server.repositori.UsuariRepositori;
 import com.altoque.altoque_server.servidor.GestorException;
@@ -41,6 +45,10 @@ public class GestorPeticionsTest {
     private EmpresaRepositori empresaRepo;
     @Autowired
     private ProducteRepositori producteRepo;
+    @Autowired 
+    private PackRepositori packRepo;
+    @Autowired
+    private PackItemRepositori packItemRepo;
 
     private final Gson gson = new Gson();
     
@@ -73,6 +81,16 @@ public class GestorPeticionsTest {
         empresaRepo.save(e);
     }
     
+    private long crearProducteProva(Empresa e, String nom) {
+        Producte pr = new Producte();
+        pr.setNom(nom);
+        pr.setDescripcio("Desc " + nom);
+        pr.setPreu(10.0);
+        pr.setEmpresa(e);
+        return producteRepo.save(pr).getId();
+    }
+
+    
     /**
     * Crea una empresa/usuari de prova i retorna un token de sessió vàlid.
     */
@@ -100,13 +118,19 @@ public class GestorPeticionsTest {
     
     @BeforeEach
     void setUp(){
+        packItemRepo.deleteAll();
+        packRepo.deleteAll();
         producteRepo.deleteAll();
         usuariRepo.deleteAll();
         empresaRepo.deleteAll();
+        
+        
     }
     
     @AfterEach
     void tearDown(){
+        packItemRepo.deleteAll();
+        packRepo.deleteAll();
         producteRepo.deleteAll();
         usuariRepo.deleteAll();
         empresaRepo.deleteAll();
@@ -483,5 +507,98 @@ public class GestorPeticionsTest {
         ProducteDto[] arr2 = rList2.getData(0, ProducteDto[].class);
         assertEquals(1, arr2.length);
     }
+    
+    @Test
+    void packCrudComplet() throws GestorException {
+
+        // Login empresa (crea empresa B-01287 y devuelve token)
+        String token = loginDeProva(Rol.EMPRESA);
+
+        Empresa e = empresaRepo.findAll().get(0);
+
+        // Crear 2 productes de l'empresa
+        long p1 = crearProducteProva(e, "Prod1");
+        long p2 = crearProducteProva(e, "Prod2");
+
+        // ---- PACK_ADD ----
+        PackDto dtoAdd = new PackDto();
+        dtoAdd.setNom("Pack Vermut");
+        dtoAdd.setPreu(1990L);
+
+        PackDto.PackItemDto i1 = new PackDto.PackItemDto();
+        i1.setProducteId(p1);
+        i1.setQuantitat(1);
+
+        PackDto.PackItemDto i2 = new PackDto.PackItemDto();
+        i2.setProducteId(p2);
+        i2.setQuantitat(2);
+
+        dtoAdd.setItems(java.util.List.of(i1, i2));
+
+        Peticio add = new Peticio(Const.Peticio.PACK_ADD, token);
+        add.addData(dtoAdd);
+
+        RespostaPeticio rAdd = resposta(add);
+        assertEquals(OK_RETURN_CODE, rAdd.getCodi());
+
+        Long idPack = rAdd.getData(0, Long.class);
+        assertNotNull(idPack);
+
+        // ---- PACK_GET ----
+        Peticio get = new Peticio(Const.Peticio.PACK_GET, token);
+        get.addData(String.valueOf(idPack));
+
+        RespostaPeticio rGet = resposta(get);
+        assertEquals(OK_RETURN_CODE, rGet.getCodi());
+
+        PackDto dtoGet = rGet.getData(0, PackDto.class);
+        assertEquals("Pack Vermut", dtoGet.getNom());
+        assertEquals(1990L, dtoGet.getPreu());
+        assertNotNull(dtoGet.getItems());
+        assertEquals(2, dtoGet.getItems().size());
+
+        // ---- PACK_MOD (cambiar items) ----
+        PackDto dtoMod = new PackDto();
+        dtoMod.setId(String.valueOf(idPack));
+        dtoMod.setNom("Pack Vermut Premium");
+        dtoMod.setPreu(2490L);
+
+        PackDto.PackItemDto i3 = new PackDto.PackItemDto();
+        i3.setProducteId(p1);
+        i3.setQuantitat(3); // cambiar quantitats
+
+        dtoMod.setItems(java.util.List.of(i3)); // ara nomes 1 item
+
+        Peticio mod = new Peticio(Const.Peticio.PACK_MOD, token);
+        mod.addData(dtoMod);
+
+        RespostaPeticio rMod = resposta(mod);
+        System.out.println("PACK_MOD codi= " + rMod.getCodi() + " | msg= " + rMod.getMissatge());
+        //System.out.println("PACK_MOD errors=" + rMod.); // si existe
+        assertEquals(OK_RETURN_CODE, rMod.getCodi());
+
+        // ---- PACK_GET (altre cop) ----
+        RespostaPeticio rGet2 = resposta(get);
+        assertEquals(OK_RETURN_CODE, rGet2.getCodi());
+
+        PackDto dtoGet2 = rGet2.getData(0, PackDto.class);
+        assertEquals("Pack Vermut Premium", dtoGet2.getNom());
+        assertEquals(2490L, dtoGet2.getPreu());
+        assertEquals(1, dtoGet2.getItems().size());
+        assertEquals(p1, dtoGet2.getItems().get(0).getProducteId());
+        assertEquals(3, dtoGet2.getItems().get(0).getQuantitat());
+
+        // ---- PACK_DEL ----
+        Peticio del = new Peticio(Const.Peticio.PACK_DEL, token);
+        del.addData(String.valueOf(idPack));
+
+        RespostaPeticio rDel = resposta(del);
+        assertEquals(OK_RETURN_CODE, rDel.getCodi());
+
+        // ---- PACK_GET ha de fallar ----
+        RespostaPeticio rGetKo = resposta(get);
+        assertEquals(ERROR_RETURN_CODE, rGetKo.getCodi());
+    }
+
     
 }

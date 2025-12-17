@@ -17,9 +17,9 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name="packs")
 public class Pack {
-    @Id 
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     
     @Column(nullable=false) 
     private String nom;
@@ -29,6 +29,51 @@ public class Pack {
     @ManyToOne(optional=false) 
     @JoinColumn(name="empresa_cif")
     private Empresa empresa;
+
+    public Pack() {
+    }
+    
+    public Pack(String nom, long preu, Empresa empresa) {
+        this.nom = nom;
+        this.preu = preu;
+        this.empresa = empresa;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    private void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNom() {
+        return nom;
+    }
+
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public long getPreu() {
+        return preu;
+    }
+
+    public void setPreu(long preu) {
+        this.preu = preu;
+    }
+
+    public Empresa getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Empresa empresa) {
+        this.empresa = empresa;
+    }
+
+    
+    
+    
     
 }
 

@@ -74,5 +74,9 @@ public class GestorProducte {
     public List<Producte> llistarPerEmpresa(String cif){
         return producteDao.llistarPerEmpresa(cif);
     }
+    
+    public void modificar(Producte p) throws GestorException{
+        producteDao.modificarProducte(p);
+    }
          
 }

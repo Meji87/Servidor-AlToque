@@ -29,4 +29,14 @@ public class LiniaComanda {
     
     @Column(nullable=false) 
     long preuUnitari; 
+
+    public LiniaComanda(Long id, Comanda comanda, Producte producte, Integer quantitat, long preuUnitari) {
+        this.id = id;
+        this.comanda = comanda;
+        this.producte = producte;
+        this.quantitat = quantitat;
+        this.preuUnitari = preuUnitari;
+    }
+    
+    
 }

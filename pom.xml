@@ -58,19 +58,6 @@
                     <artifactId>postgresql</artifactId>
                     <scope>runtime</scope>
                 </dependency>
-                <!-- Opcional pero muy recomendable 
-                <dependency>
-                    <groupId>org.flywaydb</groupId>
-                    <artifactId>flyway-core</artifactId>
-                </dependency> -->
-                <!-- H2
-                <dependency>
-                    <groupId>com.h2database</groupId>
-                    <artifactId>h2</artifactId>
-                    <scope>runtime</scope>
-                    <scope>test</scope>  
-                </dependency>
-                -->
                 
 	</dependencies>
 

@@ -70,4 +70,12 @@ public class UsuariDao {
             throw new GestorException("L'usuari no existeix");
         }
     }
+    
+    public void modificarUsuari(Usuari usuari) throws GestorException{
+        if (usuariRepo.existsById(usuari.getNomusuari())) {
+            usuariRepo.save(usuari);
+        } else {
+            throw new GestorException("L'usuari no existeix");
+        }
+    }
 }

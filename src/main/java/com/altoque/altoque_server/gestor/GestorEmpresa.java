@@ -49,5 +49,8 @@ public class GestorEmpresa {
         return empresaDao.llistarEmpreses();
     }
 
+    public void modificar(Empresa empresa) throws GestorException{
+        empresaDao.modificarEmpresa(empresa);
+    }
 
 }

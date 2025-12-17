@@ -3,6 +3,7 @@ package com.altoque.altoque_server.dao;
 
 import com.altoque.altoque_server.model.Producte;
 import com.altoque.altoque_server.repositori.ProducteRepositori;
+import com.altoque.altoque_server.servidor.GestorException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -67,4 +68,14 @@ public class ProducteDao {
     public Producte buscarPerId(long id){
         return producteRepo.findById(id).orElse(null);
     }
+    
+    public void modificarProducte(Producte p) throws GestorException{
+        if (producteRepo.existsById(p.getId())){
+            producteRepo.save(p);
+        } else {
+            throw new GestorException("L'usuari no existeix");
+        }
+    }
+    
+
 }

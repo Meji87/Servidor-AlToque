@@ -62,4 +62,12 @@ public class EmpresaDao {
         }
     }
     
+    public void modificarEmpresa(Empresa empresa) throws GestorException{
+        if (empresaRepo.existsById(empresa.getCif())) {
+            empresaRepo.save(empresa);
+        } else {
+            throw new GestorException("L'empresa no existeix");
+        }
+    }
+    
 }
