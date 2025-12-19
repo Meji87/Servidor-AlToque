@@ -8,6 +8,7 @@ import com.altoque.altoque_server.Const.Rol;
 import com.altoque.altoque_server.dto.PackDto;
 import com.altoque.altoque_server.peticio.Peticio;
 import com.altoque.altoque_server.dto.ProducteDto;
+import com.altoque.altoque_server.gestor.GestorContrasenyes;
 import com.altoque.altoque_server.peticio.RespostaPeticio;
 import com.altoque.altoque_server.gestor.GestorPeticions;
 import com.altoque.altoque_server.model.Empresa;
@@ -49,6 +50,9 @@ public class GestorPeticionsTest {
     private PackRepositori packRepo;
     @Autowired
     private PackItemRepositori packItemRepo;
+    @Autowired
+    private GestorContrasenyes gestorPass;
+
 
     private final Gson gson = new Gson();
     
@@ -66,7 +70,7 @@ public class GestorPeticionsTest {
         u.setNomusuari("Marc09");
         u.setNom("Marc");
         u.setCognoms("Mestres");
-        u.setContrasenya("123");
+        u.setContrasenya(gestorPass.hash("123"));
         usuariRepo.save(u);
     }
     
@@ -77,7 +81,7 @@ public class GestorPeticionsTest {
         Empresa e = new Empresa();
         e.setCif("B-01287");
         e.setNom("DevTech");
-        e.setContrasenya("123");
+        e.setContrasenya(gestorPass.hash("123"));
         empresaRepo.save(e);
     }
     
@@ -444,7 +448,7 @@ public class GestorPeticionsTest {
         Empresa e2 = new Empresa();
         e2.setCif("B-00002");
         e2.setNom("Empresa2");
-        e2.setContrasenya("999");
+        e2.setContrasenya(gestorPass.hash("999"));
         empresaRepo.save(e2);
 
         Peticio login2 = new Peticio(Const.Peticio.LOGIN);

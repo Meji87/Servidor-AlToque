@@ -4,18 +4,19 @@ package com.altoque.altoque_server.dto;
 import java.util.List;
 
 /**
- *
+ * Model de la clase Pack a DTO
+ * 
  * @author marc mestres
  */
 public class PackDto {
-    private String id;        // null en PACK_ADD, obligatorio en PACK_MOD/PACK_DEL
+    private String id;        
     private String nom;
-    private Long preu;        // o long si siempre viene
-    private String empresaCif; // opcional, porque la empresa la sacas de la sesión
+    private Long preu;        
+    private String empresaCif; 
     private List<PackItemDto> items;
 
     public static class PackItemDto {
-        private Long producteId;   // ojo: tu Producte usa long id
+        private Long producteId;
         private Integer quantitat;
 
         public PackItemDto() {}

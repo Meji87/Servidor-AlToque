@@ -39,7 +39,7 @@ public class Client {
     private String token = null;
     private Rol rol = null;
     private String nomUsuari = null; // pot ser nom d'usuari o CIF visible
-
+    private String nomDesc = null;
     // === Infra ===
     private final Scanner in = new Scanner(System.in);
     private final Gson gson = new Gson();
@@ -516,6 +516,7 @@ public class Client {
         ProducteDto[] arr = r.getData(0, ProducteDto[].class);  
         if (arr == null || arr.length == 0) { System.out.println("(sense productes)"); return; }
         System.out.println("___ Productes ___");
+        System.out.println("  [ID] [NOM]  --  [PREU]  [EMPRESA ID]");
         for (ProducteDto p : arr) {
             System.out.printf("  [%s] %s  --  %.2f € %s%n", 
                     p.id, p.nom, p.preu, (p.empresaCif != null ? "(" + p.empresaCif + ")" : ""));
@@ -527,6 +528,7 @@ public class Client {
         Empresa[] arr = r.getData(0, Empresa[].class);
         if (arr == null || arr.length == 0) { System.out.println("(sense empreses)"); return; }
         System.out.println("___ Empreses ___");
+        System.out.println("  [ID CIF] -- [NOM]");
         for (Empresa e : arr) {
             System.out.printf("   %s  --  %s%n", e.getCif(), e.getNom());
         }
@@ -537,7 +539,7 @@ public class Client {
         System.out.printf("PACK [%s] %s - %d%n", p.getId(), p.getNom(), p.getPreu());
         if (p.getItems() != null) {
             for (PackDto.PackItemDto it : p.getItems()) {
-                System.out.printf("   - producteId=%d x %d%n", it.getProducteId(), it.getQuantitat());
+                System.out.printf("   - producteId x quant. = %d x %d%n", it.getProducteId(), it.getQuantitat());
             }
         }
     }
